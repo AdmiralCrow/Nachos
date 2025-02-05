@@ -15,6 +15,33 @@
 // testnum is set in main.cc
 int testnum = 1;
 
+#if defined(CHANGED)
+int SharedVariable;
+void SimpleThread(int which)
+{
+    int num, val;
+    for (num = 0; num < 5; num++) 
+    {
+        //Entry section
+
+        val = SharedVariable;    
+	    printf("*** thread %d looped %d times\n", which, num);
+        currentThread->Yield();
+        SharedVariable = val+1;
+
+        //Exit section
+
+        currentThread->Yield();
+    }
+    //Decrement numThreadsActive 
+    numThreadsActive--;
+
+    //check if numThreadsActive is zero ; yield self while not.
+
+    val = SharedVariable;
+    printf("Thread %d sees final value %d\n", which, val);
+}
+#endif
 //----------------------------------------------------------------------
 // SimpleThread
 // 	Loop 5 times, yielding the CPU to another ready thread 
