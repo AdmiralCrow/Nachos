@@ -23,7 +23,35 @@ int testnum = 1;
 //	"which" is simply a number identifying the thread, for debugging
 //	purposes.
 //----------------------------------------------------------------------
+#if defined(CHANGED)
+int SharedVariable;
+void SimpleThread(int which)
+{
+    int num, val;
+    for (num = 0; num < 5; num++) 
+    {
+        //Entry section
 
+        val = SharedVariable;    
+	    printf("*** thread %d looped %d times\n", which, num);
+        currentThread->Yield();
+        SharedVariable = val+1;
+
+        //Exit section
+
+        currentThread->Yield();
+    }
+    //Decrement numThreadsActive 
+    numThreadsActive--;
+
+    //check if numThreadsActive is zero ; yield self while not.
+
+    val = SharedVariable;
+    printf("Thread %d sees final value %d\n", which, val);
+}
+
+
+#else
 void
 SimpleThread(int which)
 {
@@ -34,13 +62,12 @@ SimpleThread(int which)
         currentThread->Yield();
     }
 }
-
 //----------------------------------------------------------------------
 // ThreadTest1
 // 	Set up a ping-pong between two threads, by forking a thread 
 //	to call SimpleThread, and then calling SimpleThread ourselves.
 //----------------------------------------------------------------------
-
+#endif
 void
 ThreadTest1()
 {
@@ -57,6 +84,27 @@ ThreadTest1()
 // 	Invoke a test routine.
 //----------------------------------------------------------------------
 
+#ifdef HW1_SEMAPHORES
+
+int numThreadsActive; // used to implement barrier upon completion
+
+void
+ThreadTest(int n) {
+    DEBUG('t', "Entering SimpleTest");
+    Thread *t;
+    numThreadsActive = n;
+    printf("NumthreadsActive = %d\n", numThreadsActive);
+
+    for(int i=1; i<n; i++)
+    {
+        t = new Thread("forked thread");
+        t->Fork(SimpleThread,i);
+    }
+    SimpleThread(0);
+}
+
+#else 
+
 void
 ThreadTest()
 {
@@ -70,3 +118,4 @@ ThreadTest()
     }
 }
 
+#endif 
