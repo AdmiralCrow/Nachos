@@ -106,7 +106,8 @@ main(int argc, char **argv)
         break;
       }
     }
-	Threadtest(testnum)
+	Threadtest(testnum);
+
 	#if defined(HW1_CONDITION) && defined(CHANGED)
 		Ping();
 	#elif defined(HW1_ELEVATOR) && defined(CHANGED)
