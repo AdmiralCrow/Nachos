@@ -106,7 +106,7 @@ main(int argc, char **argv)
         break;
       }
     }
-
+	Threadtest(testnum)
 	#if defined(HW1_CONDITION) && defined(CHANGED)
 		Ping();
 	#elif defined(HW1_ELEVATOR) && defined(CHANGED)
@@ -117,8 +117,6 @@ main(int argc, char **argv)
 		ThreadTest(testnum);
 	#else
 		ThreadTest(testnum);
-		printf("Calling ThreadTest with testnum = %d\n", testnum);
-
 	#endif
 
 
