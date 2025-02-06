@@ -116,7 +116,7 @@ main(int argc, char **argv)
 	#elif defined(HW1_SEMAPHORES) && defined(CHANGED)
 		ThreadTest(testnum);
 	#else
-		ThreadTest();
+		ThreadTest(testnum);
 	#endif
 
 
