@@ -106,7 +106,7 @@ main(int argc, char **argv)
         break;
       }
     }
-	Threadtest(testnum);
+	ThreadTest(testnum);
 
 	#if defined(HW1_CONDITION) && defined(CHANGED)
 		Ping();
