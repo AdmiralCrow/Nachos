@@ -15,6 +15,10 @@
 // testnum is set in main.cc
 int testnum = 1;
 
+#if defined(HW1_SEMAPHORES)
+Semaphore* mutex = new Semaphore("Semaphore", 1);
+#endif
+
 #if defined(CHANGED)
 int SharedVariable;
 void SimpleThread(int which)
@@ -24,6 +28,10 @@ void SimpleThread(int which)
     {
         //Entry section
 
+        #if defined(HW1_SEMAPHORES)
+        mutex->P();
+        #endif
+
         val = SharedVariable;    
 	    printf("*** thread %d looped %d times\n", which, num);
         currentThread->Yield();
@@ -31,13 +39,22 @@ void SimpleThread(int which)
 
         //Exit section
 
+        #if defined(HW1_SEMAPHORES)
+        mutex->V();
+        #endif
         currentThread->Yield();
+        
     }
     //Decrement numThreadsActive 
     numThreadsActive--;
 
     //check if numThreadsActive is zero ; yield self while not.
-
+    while(numThreadsActive > 0)
+    {
+    
+    currentThread->Yield();
+    
+    }
     val = SharedVariable;
     printf("Thread %d sees final value %d\n", which, val);
 }
