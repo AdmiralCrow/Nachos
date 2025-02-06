@@ -117,6 +117,8 @@ main(int argc, char **argv)
 		ThreadTest(testnum);
 	#else
 		ThreadTest(testnum);
+		printf("Calling ThreadTest with testnum = %d\n", testnum);
+
 	#endif
 
 
