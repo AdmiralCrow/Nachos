@@ -85,7 +85,7 @@ void ThreadTest(int n) {
 //  will link correctly. It calls ThreadTest(n) with a default value (e.g., 2).
 //----------------------------------------------------------------------
 void ThreadTest() {
-    ThreadTest(4);  //setting the value.
+    ThreadTest(2);  //setting the value.
 }
 
 #else  // Unsynchronized version (for comparison/testing)
@@ -117,3 +117,4 @@ void ThreadTest() {
 }
 
 #endif
+
