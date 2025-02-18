@@ -102,7 +102,7 @@ main(int argc, char **argv)
         argCount++;
         break;
       default:
-        testnum = 1;
+        ThreadTest = 4;
         break;
       }
     }
