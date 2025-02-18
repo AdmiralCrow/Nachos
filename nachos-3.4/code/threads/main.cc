@@ -102,10 +102,10 @@ main(int argc, char **argv)
         argCount++;
         break;
       default:
-        ThreadTest(4);
+        testnum = 1;
         break;
       }
-    } 
+    }
 	ThreadTest(testnum);
 
 	#if defined(HW1_CONDITION) && defined(CHANGED)
@@ -117,7 +117,7 @@ main(int argc, char **argv)
 	#elif defined(HW1_SEMAPHORES) && defined(CHANGED)
 		ThreadTest(testnum);
 	#else
-		ThreadTest();
+		ThreadTest(4);
 	#endif
 
 
