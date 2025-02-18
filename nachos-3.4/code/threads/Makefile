@@ -7,7 +7,7 @@
 # All rights reserved.  See copyright.h for copyright notice and limitation 
 # of liability and disclaimer of warranty provisions.
 
-DEFINES = -DTHREADS
+DEFINES = -DTHREADS -DCHANGED
 INCPATH = -I../threads -I../machine
 HFILES = $(THREAD_H)
 CFILES = $(THREAD_C)
@@ -15,6 +15,7 @@ C_OFILES = $(THREAD_O)
 
 include ../Makefile.common
 include ../Makefile.dep
+
 #-----------------------------------------------------------------
 # DO NOT DELETE THIS LINE -- make depend uses it
 # DEPENDENCIES MUST END AT END OF FILE
