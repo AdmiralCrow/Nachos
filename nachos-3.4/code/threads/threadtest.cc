@@ -43,7 +43,7 @@ void SimpleThread(int which) {
         printf("*** thread %d sees value %d\n", which, val);
         SharedVariable = val + 1;
         mutex->V();  // Exit section: unlock.
-        
+        currentThread->Yield();
     }
 
     // Decrement the number of active threads safely.
