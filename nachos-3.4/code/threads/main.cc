@@ -55,20 +55,16 @@
 
 #ifdef THREADS
 extern int testnum;
-
 #endif
 
 // External functions used by this file
 
 extern void ThreadTest(void), Copy(char *unixFile, char *nachosFile);
-extern void ThreadTest(int testnum);
 extern void ElevatorTest(int numFloors, int numPersons);
-extern void Ping(void);
+extern void Ping();
 extern void Print(char *file), PerformanceTest(void);
 extern void StartProcess(char *file), ConsoleTest(char *in, char *out);
 extern void MailTest(int networkID);
-extern void SemaphorePing(void);
-extern void LockTest(void);
 
 //----------------------------------------------------------------------
 // main
@@ -106,20 +102,19 @@ main(int argc, char **argv)
         break;
       }
     }
-	ThreadTest(testnum);
 
-	#if defined(HW1_CONDITION) && defined(CHANGED)
-		Ping();
-	#elif defined(HW1_ELEVATOR) && defined(CHANGED)
-		ElevatorTest(5, 5);
-	#elif defined(HW1_LOCKS) && defined(CHANGED)
-		ThreadTest(testnum);
-	#elif defined(HW1_SEMAPHORES) && defined(CHANGED)
-		ThreadTest(testnum);
-	#else
-		ThreadTest(2);
-	#endif
+#if defined(CHANGED) && defined(HW1_CONDITION)
+	Ping();
+#else
+    ThreadTest();
+#endif
 
+
+#if defined(CHANGED) && defined(HW1_ELEVATOR)
+	ElevatorTest(5, 5);
+#else
+    ThreadTest();
+#endif
 
 
 #endif
