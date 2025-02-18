@@ -34,6 +34,7 @@ int numThreadsActive;
 //  then they print the final value of SharedVariable.
 //----------------------------------------------------------------------
 void SimpleThread(int which) {
+    
     int num, val;
     for (num = 0; num < 5; num++) {
         // Entry section: lock before reading and updating SharedVariable.
