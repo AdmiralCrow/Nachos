@@ -106,15 +106,15 @@ Lock::Lock(const char* debugName)
 {
     name = debugName;
     lockHolder = NULL;
-    free = false;  // Indicates if the lock is currently held
-    queue = new List;  // List of threads waiting for the lock
+    free = false;  // Lock is on hold
+    queue = new List;  // List of threads waiting on lock
 
 
 }
 Lock::~Lock() 
 {
 
-    delete queue;
+    delete queue; // followed above
 
 }
 void Lock::Acquire() 
@@ -134,22 +134,22 @@ void Lock::Acquire()
 void Lock::Release() 
 {
 
-    ASSERT(isHeldByCurrentThread());  // Ensure current thread holds the lock
+    ASSERT(isHeldByCurrentThread());  // current thread holds the lock
 
         IntStatus oldLevel = interrupt->SetLevel(IntOff);  // Disable interrupts
 
-        free = false;  // Release the lock
-        lockHolder = NULL;  // Clear the lock holder
+        free = false;  // Release lock
+        lockHolder = NULL;  // Clear lock holder
 
-        if (!queue->IsEmpty()) {  // If there are waiting threads
-            Thread* nextThread = (Thread*)queue->Remove();  // Get next waiting thread
-            scheduler->ReadyToRun(nextThread);  // Move the thread to the ready state
+        if (!queue->IsEmpty()) {  // if queue is empty grab next thread
+            Thread* nextThread = (Thread*)queue->Remove(); // move the thread to the ready state
+            scheduler->ReadyToRun(nextThread);  
         }
 
-        (void) interrupt->SetLevel(oldLevel);  // Restore the interrupt level
+        (void) interrupt->SetLevel(oldLevel);  // Restore the interrupt old level
     }
 
-    // Check if the Current Thread Holds the Lock
+    // checks if currentThread is holding the lock
     bool Lock::isHeldByCurrentThread() {
         return currentThread == lockHolder;
 
