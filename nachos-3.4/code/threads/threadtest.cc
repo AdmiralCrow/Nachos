@@ -68,8 +68,7 @@ void SimpleThread(int which)
 //	purposes.
 //----------------------------------------------------------------------
 
-void
-SimpleThread(int which)
+void SimpleThread(int which)
 {
     int num;
     
@@ -85,8 +84,7 @@ SimpleThread(int which)
 //	to call SimpleThread, and then calling SimpleThread ourselves.
 //----------------------------------------------------------------------
 
-void
-ThreadTest1()
+void ThreadTest1()
 {
     DEBUG('t', "Entering ThreadTest1");
 
@@ -101,8 +99,7 @@ ThreadTest1()
 // 	Invoke a test routine.
 //----------------------------------------------------------------------
 
-void
-ThreadTest()
+void ThreadTest(int n)
 {
     switch (testnum) {
     case 1:
