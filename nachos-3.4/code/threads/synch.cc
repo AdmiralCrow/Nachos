@@ -100,11 +100,69 @@ Semaphore::V()
 // Dummy functions -- so we can compile our later assignments 
 // Note -- without a correct implementation of Condition::Wait(), 
 // the test case in the network assignment won't work!
+
+#if defined(HW1_LOCKS) || defined(HW1_ELEVATOR) || defined(HW1_CONDITION)
+Lock::Lock(const char* debugName) 
+{
+    name = debugName;
+    lockHolder = NULL;
+    free = false;  // Indicates if the lock is currently held
+    queue = new List;  // List of threads waiting for the lock
+
+
+}
+Lock::~Lock() 
+{
+
+    delete queue;
+
+}
+void Lock::Acquire() 
+{
+
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);	// disable interrupts
+
+    while (value == 0) { 			// semaphore not available, locks have value of 1
+	queue->Append((void *)currentThread);	//set to sleep
+	currentThread->Sleep();
+    }
+    value--; 					// semaphore available
+
+    (void) interrupt->SetLevel(oldLevel);	// enable interrupts
+
+}
+void Lock::Release() 
+{
+
+    ASSERT(isHeldByCurrentThread());  // Ensure current thread holds the lock
+
+        IntStatus oldLevel = interrupt->SetLevel(IntOff);  // Disable interrupts
+
+        free = false;  // Release the lock
+        lockHolder = NULL;  // Clear the lock holder
+
+        if (!queue->IsEmpty()) {  // If there are waiting threads
+            Thread* nextThread = (Thread*)queue->Remove();  // Get next waiting thread
+            scheduler->ReadyToRun(nextThread);  // Move the thread to the ready state
+        }
+
+        (void) interrupt->SetLevel(oldLevel);  // Restore the interrupt level
+    }
+
+    // Check if the Current Thread Holds the Lock
+    bool Lock::isHeldByCurrentThread() {
+        return currentThread == lockHolder;
+
+}
+#else
+// Dummy functions -- so we can compile our later assignments 
+// Note -- without a correct implementation of Condition::Wait(), 
+// the test case in the network assignment won't work!
 Lock::Lock(const char* debugName) {}
 Lock::~Lock() {}
 void Lock::Acquire() {}
 void Lock::Release() {}
-
+#endif //
 Condition::Condition(const char* debugName) { }
 Condition::~Condition() { }
 void Condition::Wait(Lock* conditionLock) { ASSERT(FALSE); }

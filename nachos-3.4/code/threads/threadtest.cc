@@ -18,7 +18,9 @@ int testnum = 1;
 #ifdef HW1_SEMAPHORES
 
 // A binary semaphore to protect the shared variable.
-Semaphore *mutex = new Semaphore("mutex", 1);
+//Semaphore *mutex = new Semaphore("mutex", 1);
+Lock *lock = new Lock("lock");
+
 
 // Shared variable that all threads will increment.
 int SharedVariable = 0;
@@ -38,18 +40,22 @@ void SimpleThread(int which) {
     int num, val;
     for (num = 0; num < 5; num++) {
         // Entry section: lock before reading and updating SharedVariable.
-        mutex->P();
+        //mutex->P();
+        lock = Acquire();
         val = SharedVariable;
         printf("*** thread %d sees value %d\n", which, val);
         SharedVariable = val + 1;
-        mutex->V();  // Exit section: unlock.
+        lock->Release();
+        //mutex->V();  // Exit section: unlock.
         currentThread->Yield();
     }
 
     // Decrement the number of active threads safely.
-    mutex->P();
+    lock = Acquire();
+    //mutex->P();
     numThreadsActive--;
-    mutex->V();
+    //mutex->V();
+    lock->Release();
 
     // Barrier: Wait until all threads finish the loop.
     while (numThreadsActive > 0) {
