@@ -73,6 +73,7 @@ void ThreadTest(int n) {
     for (int i = 1; i < n; i++) {
         t = new Thread("forked thread");
         t->Fork(SimpleThread, i);
+        currentThread->Yield();
     }
     
     // Main thread runs as thread 0.
