@@ -66,6 +66,13 @@ void SimpleThread(int which) {
 //----------------------------------------------------------------------
 void ThreadTest(int n) {
     DEBUG('t', "Entering ThreadTest");
+    
+    static bool alreadyRan = false;
+    if (alreadyRan) {
+        //printf("Warning: ThreadTest() called again!\n");
+        return;
+    }
+    alreadyRan = true;
 
     Thread *t;
     numThreadsActive = n;  // Set the number of threads that will run.
