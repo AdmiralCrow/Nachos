@@ -34,7 +34,7 @@ int numThreadsActive;
 //  then they print the final value of SharedVariable.
 //----------------------------------------------------------------------
 void SimpleThread(int which) {
-    
+    static bool finalPrinted[10] = {false};
     int num, val;
     for (num = 0; num < 5; num++) {
         // Entry section: lock before reading and updating SharedVariable.
@@ -55,6 +55,13 @@ void SimpleThread(int which) {
     while (numThreadsActive > 0) {
         currentThread->Yield();
     }
+
+    mutex->P();
+        if (!finalPrinted[which]) {
+            printf("Thread %d sees final value %d\n", which, SharedVariable);
+            finalPrinted[which] = true;
+        }
+    mutex->V();
 
     // Print the final value.
     printf("Thread %d sees final value %d\n", which, SharedVariable);
