@@ -102,10 +102,10 @@ main(int argc, char **argv)
         argCount++;
         break;
       default:
-        ThreadTest = 4;
+        ThreadTest(4);
         break;
       }
-    }
+    } 
 	ThreadTest(testnum);
 
 	#if defined(HW1_CONDITION) && defined(CHANGED)
