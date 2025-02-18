@@ -41,7 +41,7 @@ void SimpleThread(int which) {
     for (num = 0; num < 5; num++) {
         // Entry section: lock before reading and updating SharedVariable.
         //mutex->P();
-        lock = Acquire();
+        lock->Acquire();
         val = SharedVariable;
         printf("*** thread %d sees value %d\n", which, val);
         SharedVariable = val + 1;
@@ -51,7 +51,7 @@ void SimpleThread(int which) {
     }
 
     // Decrement the number of active threads safely.
-    lock = Acquire();
+    lock->Acquire();
     //mutex->P();
     numThreadsActive--;
     //mutex->V();
