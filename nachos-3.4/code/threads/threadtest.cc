@@ -19,15 +19,20 @@ int testnum = 1;
 Semaphore* mutex = new Semaphore("Semaphore", 1);
 #endif
 
+#if defined(HW1_LOCKS)
+Lock* lock = new Lock("Lock");
+#endif
+
 #if defined(CHANGED)
 int SharedVariable;
+int numThreadsActive;
+
 void SimpleThread(int which)
 {
     int num, val;
     for (num = 0; num < 5; num++) 
     {
-        //Entry section
-
+        // Entry section
         #if defined(HW1_SEMAPHORES)
         mutex->P();
         #endif
@@ -38,11 +43,9 @@ void SimpleThread(int which)
         
         val = SharedVariable;    
 	    printf("Thread %d sees the value %d\n", which, val);
-        currentThread->Yield();
-        SharedVariable = val+1;
+        SharedVariable = val + 1;
 
-        //Exit section
-
+        // Exit section
         #if defined(HW1_SEMAPHORES)
         mutex->V();
         #endif
@@ -52,23 +55,23 @@ void SimpleThread(int which)
         #endif
 
         currentThread->Yield();
-        
     }
-    //Decrement numThreadsActive 
+    
+    // Decrement numThreadsActive 
     numThreadsActive--;
 
-    //check if numThreadsActive is zero ; yield self while not.
-    while(numThreadsActive > 0)
+    // Check if numThreadsActive is zero; yield self while not.
+    while (numThreadsActive > 0)
     {
-    
-    currentThread->Yield();
-    
+        currentThread->Yield();
     }
-    //Final value check
+
+    // Final value check
     val = SharedVariable;
     printf("Thread %d sees final value %d\n", which, val);
 }
 #endif
+
 //----------------------------------------------------------------------
 // SimpleThread
 // 	Loop 5 times, yielding the CPU to another ready thread 
@@ -78,15 +81,15 @@ void SimpleThread(int which)
 //	purposes.
 //----------------------------------------------------------------------
 
-void SimpleThread(int which)
-{
-    int num;
-    
-    for (num = 0; num < 5; num++) {
-	printf("*** thread %d looped %d times\n", which, num);
-        currentThread->Yield();
-    }
-}
+/////void SimpleThread(int which)
+//{
+//    int num;
+//    
+//    for (num = 0; num < 5; num++) {
+//	printf("*** thread %d looped %d times\n", which, num);
+//        currentThread->Yield();
+//    }
+//}
 
 //----------------------------------------------------------------------
 // ThreadTest1
@@ -120,4 +123,3 @@ void ThreadTest(int n)
 	break;
     }
 }
-
