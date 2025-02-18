@@ -23,6 +23,7 @@ Semaphore* mutex = new Semaphore("Semaphore", 1);
 Lock* lock = new Lock("Lock");
 #endif
 
+
 #if defined(CHANGED)
 int SharedVariable;
 int numThreadsActive;
@@ -81,15 +82,15 @@ void SimpleThread(int which)
 //	purposes.
 //----------------------------------------------------------------------
 
-/////void SimpleThread(int which)
-//{
-//    int num;
-//    
-//    for (num = 0; num < 5; num++) {
-//	printf("*** thread %d looped %d times\n", which, num);
-//        currentThread->Yield();
-//    }
-//}
+void SimpleThread(int which)
+{
+    int num;
+    
+    for (num = 0; num < 5; num++) {
+	printf("*** thread %d looped %d times\n", which, num);
+        currentThread->Yield();
+    }
+}
 
 //----------------------------------------------------------------------
 // ThreadTest1
