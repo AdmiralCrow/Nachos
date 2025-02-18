@@ -32,8 +32,12 @@ void SimpleThread(int which)
         mutex->P();
         #endif
 
+        #if defined(HW1_LOCKS)
+        lock->Acquire();
+        #endif  
+        
         val = SharedVariable;    
-	    printf("*** thread %d looped %d times\n", which, num);
+	    printf("Thread %d sees the value %d\n", which, val);
         currentThread->Yield();
         SharedVariable = val+1;
 
@@ -42,6 +46,11 @@ void SimpleThread(int which)
         #if defined(HW1_SEMAPHORES)
         mutex->V();
         #endif
+        
+        #if defined(HW1_LOCKS)
+        lock->Release();
+        #endif
+
         currentThread->Yield();
         
     }
@@ -55,6 +64,7 @@ void SimpleThread(int which)
     currentThread->Yield();
     
     }
+    //Final value check
     val = SharedVariable;
     printf("Thread %d sees final value %d\n", which, val);
 }
