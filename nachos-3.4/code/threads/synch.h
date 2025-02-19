@@ -80,6 +80,11 @@ class Lock {
   private:
     char* name;				// for debugging
     // plus some other stuff you'll need to define
+    
+#ifdef HW1_LOCKS
+    Semaphore *semaphore;   // semaphore to simulate lock behavior
+    Thread *owner;          // the thread that currently holds the lock
+#endif
 };
 
 // The following class defines a "condition variable".  A condition
