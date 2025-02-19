@@ -14,12 +14,14 @@
 
 // testnum is set in main.cc
 int testnum = 1;
-
-#ifdef HW1_SEMAPHORES
-
+#ifdef CHANGED
 // A binary semaphore to protect the shared variable.
-//Semaphore *mutex = new Semaphore("mutex", 1);
+#ifdef HW1_SEMAPHORES
+Semaphore *mutex = new Semaphore("mutex", 1);
+#endif
+#ifdef HW1_LOCKS
 Lock *lock = new Lock("lock");
+#endif
 
 
 // Shared variable that all threads will increment.
@@ -27,6 +29,7 @@ int SharedVariable = 0;
 
 // Used as a simple barrier: all threads decrement this until the last thread is done.
 int numThreadsActive; 
+
 
 //----------------------------------------------------------------------
 // SimpleThread
@@ -40,22 +43,37 @@ void SimpleThread(int which) {
     int num, val;
     for (num = 0; num < 5; num++) {
         // Entry section: lock before reading and updating SharedVariable.
-        //mutex->P();
+        #ifdef HW1_SEMAPHORES
+        mutex->P();   
+        #endif
+        #ifdef HW1_LOCKS
         lock->Acquire();
+        #endif
         val = SharedVariable;
         printf("*** thread %d sees value %d\n", which, val);
         SharedVariable = val + 1;
+        #ifdef HW1_LOCKS
         lock->Release();
+        #endif
         //mutex->V();  // Exit section: unlock.
         currentThread->Yield();
     }
 
     // Decrement the number of active threads safely.
+
+    #ifdef HW1_SEMAPHORES
+    mutex->P();
+    #endif
+    #ifdef HW1_LOCKS
     lock->Acquire();
-    //mutex->P();
+    #endif
     numThreadsActive--;
-    //mutex->V();
+    #ifdef HW1_SEMAPHORES
+    mutex->V();
+    #endif
+    #ifdef HW1_LOCKS
     lock->Release();
+    #endif
 
     // Barrier: Wait until all threads finish the loop.
     while (numThreadsActive > 0) {
@@ -104,6 +122,8 @@ void ThreadTest() {
     ThreadTest(2);  //setting the value.
 }
 
+
+
 #else  // Unsynchronized version (for comparison/testing)
 
 void SimpleThread(int which) {
@@ -113,7 +133,7 @@ void SimpleThread(int which) {
         currentThread->Yield();
     }
 }
-
+#endif
 void ThreadTest1() {
     DEBUG('t', "Entering ThreadTest1");
     Thread *t = new Thread("forked thread");
@@ -132,5 +152,4 @@ void ThreadTest() {
     }
 }
 
-#endif
 
