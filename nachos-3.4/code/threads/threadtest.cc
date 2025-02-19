@@ -2,84 +2,59 @@
 //  Simple test case for the threads assignment.
 //
 //  Create multiple threads that context switch and update a shared variable.
-//  This file contains both the unsynchronized version and the semaphore-synchronized
-//  version, which is enabled by defining HW1_SEMAPHORES.
-// 
+//  This version uses Lock operations for synchronization (Exercise 2).
+//
 // Copyright (c) 1992-1993 The Regents of the University of California.
 // All rights reserved.
 
 #include "copyright.h"
 #include "system.h"
 #include "synch.h"
+#include <cstdlib>
 
 // testnum is set in main.cc
 int testnum = 1;
-#ifdef CHANGED
-// A binary semaphore to protect the shared variable.
-#ifdef HW1_SEMAPHORES
-Semaphore *mutex = new Semaphore("mutex", 1);
-#endif
-#ifdef HW1_LOCKS
-Lock *lock = new Lock("lock");
-#endif
 
+#ifdef HW1_LOCKS    // Use the Lock-based version for synchronization
+
+// Global lock to protect shared data.
+Lock *lock = new Lock("lock");
 
 // Shared variable that all threads will increment.
 int SharedVariable = 0;
 
-// Used as a simple barrier: all threads decrement this until the last thread is done.
-int numThreadsActive; 
-
+// Counter to implement a barrier: tracks how many threads are still running.
+int numThreadsActive;
 
 //----------------------------------------------------------------------
 // SimpleThread
 //  Loop 5 times, yielding the CPU to allow context switching.
 //  Each thread prints the shared variable before incrementing it.
-//  At the end, all threads wait until every thread finishes its loop,
-//  then they print the final value of SharedVariable.
+//  After finishing the loop, each thread decrements the active-thread counter,
+//  then waits (barrier) until all threads finish before printing the final value.
 //----------------------------------------------------------------------
 void SimpleThread(int which) {
-
     int num, val;
     for (num = 0; num < 5; num++) {
-        // Entry section: lock before reading and updating SharedVariable.
-        #ifdef HW1_SEMAPHORES
-        mutex->P();   
-        #endif
-        #ifdef HW1_LOCKS
+        // Entry section: acquire the lock before accessing SharedVariable.
         lock->Acquire();
-        #endif
         val = SharedVariable;
         printf("*** thread %d sees value %d\n", which, val);
         SharedVariable = val + 1;
-        #ifdef HW1_LOCKS
-        lock->Release();
-        #endif
-        //mutex->V();  // Exit section: unlock.
+        lock->Release();  // Exit section: release the lock.
         currentThread->Yield();
     }
-
-    // Decrement the number of active threads safely.
-
-    #ifdef HW1_SEMAPHORES
-    mutex->P();
-    #endif
-    #ifdef HW1_LOCKS
+    
+    // Safely decrement the active thread counter.
     lock->Acquire();
-    #endif
     numThreadsActive--;
-    #ifdef HW1_SEMAPHORES
-    mutex->V();
-    #endif
-    #ifdef HW1_LOCKS
     lock->Release();
-    #endif
-
-    // Barrier: Wait until all threads finish the loop.
+    
+    // Barrier: wait until all threads have finished their loops.
     while (numThreadsActive > 0) {
         currentThread->Yield();
     }
-
+    
     // Print the final value.
     printf("Thread %d sees final value %d\n", which, SharedVariable);
 }
@@ -89,15 +64,7 @@ void SimpleThread(int which) {
 //  Fork "n" threads (numbered 0 to n-1) and have them execute SimpleThread.
 //----------------------------------------------------------------------
 void ThreadTest(int n) {
-    DEBUG('t', "Entering ThreadTest");
-    
-    static bool alreadyRan = false;
-    if (alreadyRan) {
-        //printf("Warning: ThreadTest() called again!\n");
-        return;
-    }
-    alreadyRan = true;
-
+    DEBUG('t', "Entering ThreadTest (Lock version)");
     Thread *t;
     numThreadsActive = n;  // Set the number of threads that will run.
     printf("NumThreadsActive = %d\n", numThreadsActive);
@@ -106,7 +73,6 @@ void ThreadTest(int n) {
     for (int i = 1; i < n; i++) {
         t = new Thread("forked thread");
         t->Fork(SimpleThread, i);
-        currentThread->Yield();
     }
     
     // Main thread runs as thread 0.
@@ -115,16 +81,76 @@ void ThreadTest(int n) {
 
 //----------------------------------------------------------------------
 // Default ThreadTest()
-//  This is added so that main.cc, which calls ThreadTest() with no arguments,
-//  will link correctly. It calls ThreadTest(n) with a default value (e.g., 2).
+//  This ensures that when main.cc calls ThreadTest() without an argument,
+//  the lock version is used with a default thread count (e.g., 2).
 //----------------------------------------------------------------------
 void ThreadTest() {
-    ThreadTest(2);  //setting the value.
+    ThreadTest(2);
 }
 
+#elif defined(HW1_SEMAPHORES)
+//---------------------------------------------------------------------
+// Semaphore-based version (existing version for Exercise 1)
+//---------------------------------------------------------------------
 
+// A binary semaphore to protect the shared variable.
+Semaphore *mutex = new Semaphore("mutex", 1);
 
-#else  // Unsynchronized version (for comparison/testing)
+// Shared variable that all threads will increment.
+int SharedVariable = 0;
+
+// Used as a simple barrier: all threads decrement this until the last thread is done.
+int numThreadsActive; 
+
+void SimpleThread(int which) {
+    int num, val;
+    for (num = 0; num < 5; num++) {
+        // Entry section: lock before reading and updating SharedVariable.
+        mutex->P();
+        val = SharedVariable;
+        printf("*** thread %d sees value %d\n", which, val);
+        SharedVariable = val + 1;
+        mutex->V();  // Exit section: unlock.
+        currentThread->Yield();
+    }
+
+    // Decrement the number of active threads safely.
+    mutex->P();
+    numThreadsActive--;
+    mutex->V();
+
+    // Barrier: wait until all threads finish the loop.
+    while (numThreadsActive > 0) {
+        currentThread->Yield();
+    }
+
+    // Print the final value.
+    printf("Thread %d sees final value %d\n", which, SharedVariable);
+}
+
+void ThreadTest(int n) {
+    DEBUG('t', "Entering ThreadTest (Semaphore version)");
+    Thread *t;
+    numThreadsActive = n;  // Set the number of threads that will run.
+    printf("NumThreadsActive = %d\n", numThreadsActive);
+    
+    // Fork threads 1 through n-1.
+    for (int i = 1; i < n; i++) {
+        t = new Thread("forked thread");
+        t->Fork(SimpleThread, i);
+    }
+    
+    // Main thread runs as thread 0.
+    SimpleThread(0);
+}
+
+void ThreadTest() {
+    ThreadTest(2);
+}
+
+#else
+
+// Unsynchronized version (for comparison/testing)
 
 void SimpleThread(int which) {
     int num;
@@ -133,7 +159,7 @@ void SimpleThread(int which) {
         currentThread->Yield();
     }
 }
-#endif
+
 void ThreadTest1() {
     DEBUG('t', "Entering ThreadTest1");
     Thread *t = new Thread("forked thread");
@@ -152,4 +178,4 @@ void ThreadTest() {
     }
 }
 
-
+#endif
