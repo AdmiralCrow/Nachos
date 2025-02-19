@@ -24,6 +24,7 @@
 #include "copyright.h"
 #include "synch.h"
 #include "system.h"
+#include <cstdlib>
 
 //----------------------------------------------------------------------
 // Semaphore::Semaphore
@@ -97,72 +98,58 @@ Semaphore::V()
     (void) interrupt->SetLevel(oldLevel);
 }
 
+
+#ifdef HW1_LOCKS
 // Dummy functions -- so we can compile our later assignments 
 // Note -- without a correct implementation of Condition::Wait(), 
 // the test case in the network assignment won't work!
-
-#if defined(HW1_LOCKS) || defined(HW1_ELEVATOR) || defined(HW1_CONDITION)
-Lock::Lock(const char* debugName) 
-{
-    name = debugName;
-    lockHolder = NULL;
-    free = false;  // Lock is on hold
-    queue = new List;  // List of threads waiting on lock
-
-
+// Lock::Lock -- Constructor: initialize lock to be free.
+Lock::Lock(const char* debugName) {
+    // Make a copy of the debug name for this lock.
+    name = strdup(debugName);
+    // Create a semaphore with initial value 1.
+    semaphore = new Semaphore(debugName, 1);
+    // Initially, no thread holds the lock.
+    owner = NULL;
 }
-Lock::~Lock() 
-{
 
-    delete queue; // followed above
-
+// Lock::~Lock -- Destructor: deallocate lock.
+Lock::~Lock() {
+    delete semaphore;
+    free(name);
 }
-void Lock::Acquire() 
-{
 
-    IntStatus oldLevel = interrupt->SetLevel(IntOff);	// disable interrupts
-
-    while (value == 0) { 			// semaphore not available, locks have value of 1
-	queue->Append((void *)currentThread);	//set to sleep
-	currentThread->Sleep();
-    }
-    value--; 					// semaphore available
-
-    (void) interrupt->SetLevel(oldLevel);	// enable interrupts
-
+// Lock::Acquire -- Wait for the lock to become free, then acquire it.
+void Lock::Acquire() {
+    semaphore->P();         // Wait until the semaphore is available.
+    owner = currentThread;    // Record the owner as the current thread.
 }
-void Lock::Release() 
-{
 
-    ASSERT(isHeldByCurrentThread());  // current thread holds the lock
 
-        IntStatus oldLevel = interrupt->SetLevel(IntOff);  // Disable interrupts
-
-        free = false;  // Release lock
-        lockHolder = NULL;  // Clear lock holder
-
-        if (!queue->IsEmpty()) {  // if queue is empty grab next thread
-            Thread* nextThread = (Thread*)queue->Remove(); // move the thread to the ready state
-            scheduler->ReadyToRun(nextThread);  
-        }
-
-        (void) interrupt->SetLevel(oldLevel);  // Restore the interrupt old level
-    }
-
-    // checks if currentThread is holding the lock
-    bool Lock::isHeldByCurrentThread() {
-        return currentThread == lockHolder;
-
+// Lock::Release -- Release the lock and wake up a waiting thread.
+void Lock::Release() {
+    // Ensure that only the thread holding the lock can release it.
+    ASSERT(isHeldByCurrentThread());
+    owner = NULL;           // No thread now owns the lock.
+    semaphore->V();         // Signal the semaphore, waking up a waiting thread.
 }
+
+// Lock::isHeldByCurrentThread -- Return true if the current thread holds the lock.
+bool Lock::isHeldByCurrentThread() {
+    return (owner == currentThread);
+}
+
 #else
-// Dummy functions -- so we can compile our later assignments 
-// Note -- without a correct implementation of Condition::Wait(), 
-// the test case in the network assignment won't work!
-Lock::Lock(const char* debugName) {}
-Lock::~Lock() {}
-void Lock::Acquire() {}
-void Lock::Release() {}
-#endif //
+
+// Dummy implementations if HW1_LOCKS is not defined.
+Lock::Lock(const char* debugName) { }
+Lock::~Lock() { }
+void Lock::Acquire() { }
+void Lock::Release() { }
+bool Lock::isHeldByCurrentThread() { return FALSE; }
+
+#endif // HW1_LOCKS
+
 Condition::Condition(const char* debugName) { }
 Condition::~Condition() { }
 void Condition::Wait(Lock* conditionLock) { ASSERT(FALSE); }
