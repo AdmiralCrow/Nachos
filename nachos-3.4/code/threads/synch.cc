@@ -150,8 +150,70 @@ bool Lock::isHeldByCurrentThread() { return FALSE; }
 
 #endif // HW1_LOCKS
 
-Condition::Condition(const char* debugName) { }
-Condition::~Condition() { }
-void Condition::Wait(Lock* conditionLock) { ASSERT(FALSE); }
-void Condition::Signal(Lock* conditionLock) { }
-void Condition::Broadcast(Lock* conditionLock) { }
+// ---------------------------------------------------------------------
+// Condition variable implementations (Exercise 3)
+// ---------------------------------------------------------------------
+
+// Condition::Condition -- Constructor: initialize condition.
+Condition::Condition(const char* debugName) {
+    // Duplicate the debug name for debugging purposes.
+    name = strdup(debugName);
+    // Allocate a new list for waiting semaphores.
+    queue = new List;
+}
+
+// Condition::~Condition -- Destructor: deallocate condition.
+Condition::~Condition() {
+    delete queue;
+    free(name);
+}
+
+// Condition::Wait -- Wait on the condition.
+// Release conditionLock, sleep until signaled, then re-acquire conditionLock.
+void Condition::Wait(Lock* conditionLock) {
+    // The current thread must hold the conditionLock.
+    printf("Condition::Wait: currentThread=%p, lock held? %d\n", currentThread, conditionLock->isHeldByCurrentThread());
+    ASSERT(conditionLock->isHeldByCurrentThread());
+
+    // Create a new semaphore for this waiting thread, initially 0.
+    Semaphore *waitSem = new Semaphore("condition wait", 0);
+    
+    // Add the semaphore to the condition's waiting queue.
+    queue->Append((void*)waitSem);
+    
+    // Release the lock before waiting.
+    conditionLock->Release();
+    
+    // Block on the semaphore until signaled.
+    waitSem->P();
+    
+    // Once signaled, re-acquire the lock.
+    conditionLock->Acquire();
+    
+    // Clean up the semaphore.
+    delete waitSem;
+}
+
+// Condition::Signal -- Wake up one waiting thread, if any.
+void Condition::Signal(Lock* conditionLock) {
+    // The current thread must hold the conditionLock.
+    ASSERT(conditionLock->isHeldByCurrentThread());
+    
+    // If there is a waiting thread, remove its semaphore from the queue and signal it.
+    if (!queue->IsEmpty()) {
+        Semaphore *waitSem = (Semaphore*)queue->Remove();
+        waitSem->V();
+    }
+}
+
+// Condition::Broadcast -- Wake up all waiting threads.
+void Condition::Broadcast(Lock* conditionLock) {
+    // The current thread must hold the conditionLock.
+    ASSERT(conditionLock->isHeldByCurrentThread());
+    
+    // Signal every waiting thread.
+    while (!queue->IsEmpty()) {
+        Signal(conditionLock);
+    }
+}
+
