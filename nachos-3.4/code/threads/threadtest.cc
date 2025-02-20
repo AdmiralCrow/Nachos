@@ -15,9 +15,65 @@
 // testnum is set in main.cc
 int testnum = 1;
 
-#ifdef HW1_LOCKS    // Use the Lock-based version for synchronization
 
+#ifdef HW1_CONDITIONS
+// This branch tests Condition variable based synchronization.
+
+Lock *condLock = new Lock("condLock");
+Condition *barrierCV = new Condition("barrierCV");
+int SharedVariable = 0;
+int numThreadsActive;
+
+void SimpleThread(int which) {
+    int num, val;
+    for (num = 0; num < 5; num++) {
+        // Acquire the lock before accessing SharedVariable.
+        condLock->Acquire();
+        val = SharedVariable;
+        printf("*** thread %d sees value %d\n", which, val);
+        SharedVariable = val + 1;
+        condLock->Release();
+        currentThread->Yield();
+    }
+
+    // Acquire lock to update and check the barrier.
+    condLock->Acquire();
+    numThreadsActive--;
+    // If this is the last thread, signal all waiting threads.
+    if (numThreadsActive == 0)
+        barrierCV->Broadcast(condLock);
+    else
+        // Otherwise, wait on the condition.
+        barrierCV->Wait(condLock);
+    condLock->Release();
+
+    printf("Thread %d sees final value %d\n", which, SharedVariable);
+}
+
+void ThreadTest(int n) {
+    DEBUG('t', "Entering ThreadTest (Condition version)");
+    Thread *t;
+    numThreadsActive = n;
+    printf("NumThreadsActive = %d\n", numThreadsActive);
+
+    for (int i = 1; i < n; i++) {
+        t = new Thread("forked thread");
+        t->Fork(SimpleThread, i);
+    }
+    SimpleThread(0);
+}
+
+void ThreadTest() {
+    ThreadTest(2);
+}
+
+
+#elif defined(HW1_LOCKS)   // Use the Lock-based version for synchronization
+// ---------------------
+// Lock-based version (Exercise 2)
+// ---------------------
 // Global lock to protect shared data.
+
 Lock *lock = new Lock("lock");
 
 // Shared variable that all threads will increment.
