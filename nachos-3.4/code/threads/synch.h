@@ -119,23 +119,20 @@ class Lock {
 // can acquire the lock, and change data structures, before the woken
 // thread gets a chance to run.
 
+
 class Condition {
   public:
-    Condition(const char* debugName);		// initialize condition to 
-					// "no one waiting"
-    ~Condition();			// deallocate the condition
-    char* getName() { return (name); }
+    Condition(const char* debugName);    // initialize condition to "no one waiting"
+    ~Condition();                        // deallocate the condition
+    char* getName() { return name; }
     
-    void Wait(Lock *conditionLock); 	// these are the 3 operations on 
-					// condition variables; releasing the 
-					// lock and going to sleep are 
-					// *atomic* in Wait()
-    void Signal(Lock *conditionLock);   // conditionLock must be held by
-    void Broadcast(Lock *conditionLock);// the currentThread for all of 
-					// these operations
+    void Wait(Lock *conditionLock);      // wait for condition (release lock and sleep)
+    void Signal(Lock *conditionLock);    // wake up one waiting thread
+    void Broadcast(Lock *conditionLock); // wake up all waiting threads
 
   private:
     char* name;
-    // plus some other stuff you'll need to define
+    List *queue;  // waiting queue for Condition (store pointers to Semaphores)
 };
+
 #endif // SYNCH_H
