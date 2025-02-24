@@ -133,23 +133,23 @@ void ELEVATOR::start() {
 void ELEVATOR::hailElevator(Person *p) {
     elevatorLock->Acquire();
     
-    // Person indicates they are waiting at their current floor.
+    // Indicate waiting at current floor.
     waitingToEnter[p->atFloor - 1]++;
 
-    // Wait until the elevator arrives at the person's floor AND has space.
+    // Wait for elevator to arrive at the person's floor AND check if there is space.
     while (currentFloor != p->atFloor || occupancy >= maxOccupancy) {
         entering[p->atFloor - 1]->Wait(elevatorLock);
     }
     
-    // Person can now enter (guaranteed).
+    // Person can now enter the elevator.
     waitingToEnter[p->atFloor - 1]--;
     occupancy++;
     printf("Person %d got into the elevator.\n", p->id);
 
-    // Person indicates their destination.
+    // Person states their destination floor.
     waitingToLeave[p->toFloor - 1]++;
 
-    // Wait until the elevator reaches their destination floor.
+    // Wait until the elevator reaches the destination floor.
     while (currentFloor != p->toFloor) {
         leaving[p->toFloor - 1]->Wait(elevatorLock);
     }
