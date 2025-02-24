@@ -172,7 +172,7 @@ Condition::~Condition() {
 // Release conditionLock, sleep until signaled, then re-acquire conditionLock.
 void Condition::Wait(Lock* conditionLock) {
     // The current thread must hold the conditionLock.
-    printf("Condition::Wait: currentThread=%p, lock held? %d\n", currentThread, conditionLock->isHeldByCurrentThread());
+    // printf("Condition::Wait: currentThread=%p, lock held? %d\n", currentThread, conditionLock->isHeldByCurrentThread());
     ASSERT(conditionLock->isHeldByCurrentThread());
 
     // Create a new semaphore for this waiting thread, initially 0.
