@@ -135,34 +135,31 @@ void ELEVATOR::hailElevator(Person *p) {
     
     // Person indicates they are waiting at their current floor.
     waitingToEnter[p->atFloor - 1]++;
-    
-    // Wait until the elevator arrives at the person's floor.
-    while (currentFloor != p->atFloor) {
+
+    // Wait until the elevator arrives at the person's floor AND has space.
+    while (currentFloor != p->atFloor || occupancy >= maxOccupancy) {
         entering[p->atFloor - 1]->Wait(elevatorLock);
     }
+    
+    // Person can now enter (guaranteed).
     waitingToEnter[p->atFloor - 1]--;
-    if (occupancy < maxOccupancy) {
-        occupancy++;
-        printf("Person %d got into the elevator.\n", p->id);
-    } else {
-        // If elevator is full, for simplicity, we assume they wait.
-        // (A full solution would have them wait until space is available.)
-    }
-    
-    // Person now indicates their destination.
+    occupancy++;
+    printf("Person %d got into the elevator.\n", p->id);
+
+    // Person indicates their destination.
     waitingToLeave[p->toFloor - 1]++;
-    
-    // Wait until the elevator reaches the destination floor.
+
+    // Wait until the elevator reaches their destination floor.
     while (currentFloor != p->toFloor) {
         leaving[p->toFloor - 1]->Wait(elevatorLock);
     }
+    
     waitingToLeave[p->toFloor - 1]--;
     occupancy--;
     printf("Person %d got out of the elevator.\n", p->id);
-    
-    // Increment the count of served requests.
+
     servedRequests++;
-    
+
     elevatorLock->Release();
 }
 
