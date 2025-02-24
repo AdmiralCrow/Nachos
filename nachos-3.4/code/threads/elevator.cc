@@ -33,8 +33,6 @@ void Elevator(int numFloors) {
 // -------------------------
 void PersonThread(int arg) {
     Person *p = (Person *)arg;
-    // Print the request.
-    printf("Person %d wants to go to floor %d from floor %d\n", p->id, p->toFloor, p->atFloor);
     // Call the elevator's hail function.
     elevatorInstance->hailElevator(p);
     // Finish the thread.
