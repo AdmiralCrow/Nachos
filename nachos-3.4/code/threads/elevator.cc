@@ -141,12 +141,12 @@ void ELEVATOR::hailElevator(Person *p) {
         entering[p->atFloor - 1]->Wait(elevatorLock);
     }
     
-    // Person can now enter the elevator.
+    // The person can now enter the elevator.
     waitingToEnter[p->atFloor - 1]--;
     occupancy++;
     printf("Person %d got into the elevator.\n", p->id);
 
-    // Person states their destination floor.
+    // The person states their destination floor.
     waitingToLeave[p->toFloor - 1]++;
 
     // Wait until the elevator reaches the destination floor.
