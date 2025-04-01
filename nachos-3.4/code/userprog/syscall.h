@@ -29,6 +29,7 @@
 #define SC_Close	8
 #define SC_Fork		9
 #define SC_Yield	10
+#define SC_Kill     11 // New system call code for Kill
 
 #ifndef IN_ASM
 
@@ -64,6 +65,13 @@ SpaceId Exec(char *name);
  */
 int Join(SpaceId id); 	
  
+/* New system call: Kill
+
+Kill the process with the supplied SpaceId.
+
+Returns 0 if successful, or -1 if the SpaceId is invalid. */ 
+int Kill(SpaceId id);
+
 
 /* File system operations: Create, Open, Read, Write, Close
  * These functions are patterned after UNIX -- files represent
@@ -127,3 +135,4 @@ void Yield();
 #endif /* IN_ASM */
 
 #endif /* SYSCALL_H */
+
