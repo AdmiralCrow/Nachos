@@ -15,10 +15,11 @@
 #include "interrupt.h"
 #include "stats.h"
 #include "timer.h"
+#include "memory_manager.h"  // Included Memory Manager header
 
 // Initialization and cleanup routines
 extern void Initialize(int argc, char **argv); 	// Initialization,
-						// called before anything else
+// called before anything else
 extern void Cleanup();				// Cleanup, called when
 						// Nachos is done.
 
@@ -49,4 +50,8 @@ extern SynchDisk   *synchDisk;
 extern PostOffice* postOffice;
 #endif
 
+// Global Memory Manager instance
+extern MemoryManager *memoryManager;
+
 #endif // SYSTEM_H
+
