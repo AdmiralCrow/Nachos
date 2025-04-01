@@ -1,8 +1,7 @@
-// addrspace.cc 
+// addrspace.cc  
 //	Routines to manage address spaces (executing user programs).
 //
 //	In order to run a user program, you must:
-//
 //	1. link with the -N -T 0 option 
 //	2. run coff2noff to convert the object file to Nachos format
 //		(Nachos object code format is essentially just a simpler
@@ -29,20 +28,19 @@
 //	object file header, in case the file was generated on a little
 //	endian machine, and we're now running on a big endian machine.
 //----------------------------------------------------------------------
-
 static void 
 SwapHeader (NoffHeader *noffH)
 {
-	noffH->noffMagic = WordToHost(noffH->noffMagic);
-	noffH->code.size = WordToHost(noffH->code.size);
-	noffH->code.virtualAddr = WordToHost(noffH->code.virtualAddr);
-	noffH->code.inFileAddr = WordToHost(noffH->code.inFileAddr);
-	noffH->initData.size = WordToHost(noffH->initData.size);
-	noffH->initData.virtualAddr = WordToHost(noffH->initData.virtualAddr);
-	noffH->initData.inFileAddr = WordToHost(noffH->initData.inFileAddr);
-	noffH->uninitData.size = WordToHost(noffH->uninitData.size);
-	noffH->uninitData.virtualAddr = WordToHost(noffH->uninitData.virtualAddr);
-	noffH->uninitData.inFileAddr = WordToHost(noffH->uninitData.inFileAddr);
+    noffH->noffMagic = WordToHost(noffH->noffMagic);
+    noffH->code.size = WordToHost(noffH->code.size);
+    noffH->code.virtualAddr = WordToHost(noffH->code.virtualAddr);
+    noffH->code.inFileAddr = WordToHost(noffH->code.inFileAddr);
+    noffH->initData.size = WordToHost(noffH->initData.size);
+    noffH->initData.virtualAddr = WordToHost(noffH->initData.virtualAddr);
+    noffH->initData.inFileAddr = WordToHost(noffH->initData.inFileAddr);
+    noffH->uninitData.size = WordToHost(noffH->uninitData.size);
+    noffH->uninitData.virtualAddr = WordToHost(noffH->uninitData.virtualAddr);
+    noffH->uninitData.inFileAddr = WordToHost(noffH->uninitData.inFileAddr);
 }
 
 //----------------------------------------------------------------------
@@ -52,135 +50,148 @@ SwapHeader (NoffHeader *noffH)
 //	up so that we can start executing user instructions.
 //
 //	Assumes that the object code file is in NOFF format.
-//
-//	First, set up the translation from program memory to physical 
-//	memory.  For now, this is really simple (1:1), since we are
-//	only uniprogramming, and we have a single unsegmented page table
-//
-//	"executable" is the file containing the object code to load into memory
 //----------------------------------------------------------------------
-
 AddrSpace::AddrSpace(OpenFile *executable)
 {
     NoffHeader noffH;
     unsigned int i, size;
 
+    // Read and possibly swap the header
     executable->ReadAt((char *)&noffH, sizeof(noffH), 0);
     if ((noffH.noffMagic != NOFFMAGIC) && 
-		(WordToHost(noffH.noffMagic) == NOFFMAGIC))
-    	SwapHeader(&noffH);
+        (WordToHost(noffH.noffMagic) == NOFFMAGIC))
+        SwapHeader(&noffH);
     ASSERT(noffH.noffMagic == NOFFMAGIC);
 
-// how big is address space?
-    size = noffH.code.size + noffH.initData.size + noffH.uninitData.size 
-			+ UserStackSize;	// we need to increase the size
-						// to leave room for the stack
+    // Calculate the size of the address space: code, init data, uninit data, plus stack.
+    size = noffH.code.size + noffH.initData.size + noffH.uninitData.size + UserStackSize;
     numPages = divRoundUp(size, PageSize);
     size = numPages * PageSize;
 
-    ASSERT(numPages <= NumPhysPages);		// check we're not trying
-						// to run anything too big --
-						// at least until we have
-						// virtual memory
+    // Check that we don't exceed physical memory (until virtual memory is implemented).
+    ASSERT(numPages <= NumPhysPages);
 
-    DEBUG('a', "Initializing address space, num pages %d, size %d\n", 
-					numPages, size);
-// first, set up the translation 
+    DEBUG('a', "Initializing address space, num pages %d, size %d\n", numPages, size);
+
+    // --- Debug Print: Loaded Program segments ---
+    DEBUG('a', "Loaded Program: %d code | %d data | %d bss\n", 
+          noffH.code.size, noffH.initData.size, noffH.uninitData.size);
+
+    // Set up the translation:
+    // Use the Memory Manager to allocate a free physical page for each virtual page.
     pageTable = new TranslationEntry[numPages];
     for (i = 0; i < numPages; i++) {
-	pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
-	pageTable[i].physicalPage = i;
-	pageTable[i].valid = TRUE;
-	pageTable[i].use = FALSE;
-	pageTable[i].dirty = FALSE;
-	pageTable[i].readOnly = FALSE;  // if the code segment was entirely on 
-					// a separate page, we could set its 
-					// pages to be read-only
+        pageTable[i].virtualPage = i;
+        int physPage = memoryManager->getPage();
+        ASSERT(physPage != -1);  // Ensure a free physical page is available.
+        pageTable[i].physicalPage = physPage;
+        pageTable[i].valid = TRUE;
+        pageTable[i].use = FALSE;
+        pageTable[i].dirty = FALSE;
+        pageTable[i].readOnly = FALSE; // Could be set to TRUE for code segment pages if desired.
     }
     
-// zero out the entire address space, to zero the unitialized data segment 
-// and the stack segment
+    // Zero out the entire address space.
     bzero(machine->mainMemory, size);
 
-// then, copy in the code and data segments into memory
+    // Copy the code segment from the NOFF file into memory.
     if (noffH.code.size > 0) {
         DEBUG('a', "Initializing code segment, at 0x%x, size %d\n", 
-			noffH.code.virtualAddr, noffH.code.size);
+              noffH.code.virtualAddr, noffH.code.size);
         executable->ReadAt(&(machine->mainMemory[noffH.code.virtualAddr]),
-			noffH.code.size, noffH.code.inFileAddr);
+                           noffH.code.size, noffH.code.inFileAddr);
     }
+    // Copy the initialized data segment.
     if (noffH.initData.size > 0) {
         DEBUG('a', "Initializing data segment, at 0x%x, size %d\n", 
-			noffH.initData.virtualAddr, noffH.initData.size);
+              noffH.initData.virtualAddr, noffH.initData.size);
         executable->ReadAt(&(machine->mainMemory[noffH.initData.virtualAddr]),
-			noffH.initData.size, noffH.initData.inFileAddr);
+                           noffH.initData.size, noffH.initData.inFileAddr);
     }
+    // The uninitialized data segment (bss) is already zeroed out by bzero.
 
+    // --- Create and associate a PCB with this address space ---
+    // Assume processManager is a global pointer to the Process Manager.
+    pcb = new PCB(currentThread);
+    int pid = processManager->getPID();
+    ASSERT(pid != -1);
+    pcb->setID(pid);
+    // Optionally, set the parent PCB if applicable.
 }
 
 //----------------------------------------------------------------------
 // AddrSpace::~AddrSpace
-// 	Dealloate an address space.  Nothing for now!
+// 	Deallocate an address space.
 //----------------------------------------------------------------------
-
 AddrSpace::~AddrSpace()
 {
-   delete pageTable;
+    // Free each physical page allocated using the Memory Manager.
+    for (unsigned int i = 0; i < numPages; i++) {
+        memoryManager->clearPage(pageTable[i].physicalPage);
+    }
+    delete [] pageTable;
+    delete pcb;  // Clean up the associated PCB.
 }
 
 //----------------------------------------------------------------------
 // AddrSpace::InitRegisters
 // 	Set the initial values for the user-level register set.
-//
-// 	We write these directly into the "machine" registers, so
-//	that we can immediately jump to user code.  Note that these
-//	will be saved/restored into the currentThread->userRegisters
-//	when this thread is context switched out.
 //----------------------------------------------------------------------
-
 void
 AddrSpace::InitRegisters()
 {
     int i;
 
     for (i = 0; i < NumTotalRegs; i++)
-	machine->WriteRegister(i, 0);
+        machine->WriteRegister(i, 0);
 
-    // Initial program counter -- must be location of "Start"
+    // Set the initial program counter to 0.
     machine->WriteRegister(PCReg, 0);	
 
-    // Need to also tell MIPS where next instruction is, because
-    // of branch delay possibility
+    // Set the next instruction counter.
     machine->WriteRegister(NextPCReg, 4);
 
-   // Set the stack register to the end of the address space, where we
-   // allocated the stack; but subtract off a bit, to make sure we don't
-   // accidentally reference off the end!
+    // Set the stack pointer to the end of the address space.
     machine->WriteRegister(StackReg, numPages * PageSize - 16);
     DEBUG('a', "Initializing stack register to %d\n", numPages * PageSize - 16);
 }
 
 //----------------------------------------------------------------------
 // AddrSpace::SaveState
-// 	On a context switch, save any machine state, specific
-//	to this address space, that needs saving.
-//
-//	For now, nothing!
+// 	On a context switch, save any machine state specific to this address space.
 //----------------------------------------------------------------------
-
 void AddrSpace::SaveState() 
-{}
+{
+    // Currently, nothing to save.
+}
 
 //----------------------------------------------------------------------
 // AddrSpace::RestoreState
-// 	On a context switch, restore the machine state so that
-//	this address space can run.
-//
-//      For now, tell the machine where to find the page table.
+// 	On a context switch, restore the machine state so that this address space can run.
 //----------------------------------------------------------------------
-
 void AddrSpace::RestoreState() 
 {
     machine->pageTable = pageTable;
     machine->pageTableSize = numPages;
 }
+
+//----------------------------------------------------------------------
+// AddrSpace::ReadFile
+// 	Load a segment from an open file into the address space's memory.
+// 	This function translates the virtual address to physical memory using the 
+// 	page table and copies 'size' bytes from the file starting at 'fileAddr' into
+// 	the address space starting at 'virtAddr'.
+// 	Returns the number of bytes read.
+//----------------------------------------------------------------------
+int AddrSpace::ReadFile(int virtAddr, OpenFile *file, int size, int fileAddr)
+{
+    // In a complete implementation, you'd translate virtAddr to a physical address.
+    // For now, assume a direct mapping.
+    int physAddr = virtAddr; // Replace with translation using your page table.
+    char *buffer = new char[size];
+    int bytesRead = file->ReadAt(buffer, size, fileAddr);
+    bcopy(buffer, &machine->mainMemory[physAddr], bytesRead);
+    delete [] buffer;
+    return bytesRead;
+}
+
