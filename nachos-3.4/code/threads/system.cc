@@ -7,6 +7,7 @@
 
 #include "copyright.h"
 #include "system.h"
+#include "memory_manager.h"  // Include the Memory Manager header
 
 // This defines *all* of the global data structures used by Nachos.
 // These are all initialized and de-allocated by this file.
@@ -17,7 +18,7 @@ Scheduler *scheduler;			// the ready list
 Interrupt *interrupt;			// interrupt status
 Statistics *stats;			// performance metrics
 Timer *timer;				// the hardware timer device,
-					// for invoking context switches
+// for invoking context switches
 
 #ifdef FILESYS_NEEDED
 FileSystem  *fileSystem;
@@ -35,10 +36,11 @@ Machine *machine;	// user program memory and registers
 PostOffice *postOffice;
 #endif
 
+// Global Memory Manager instance
+MemoryManager *memoryManager = NULL;
 
 // External definition, to allow us to take a pointer to this function
 extern void Cleanup();
-
 
 //----------------------------------------------------------------------
 // TimerInterruptHandler
@@ -61,7 +63,7 @@ static void
 TimerInterruptHandler(int dummy)
 {
     if (interrupt->getStatus() != IdleMode)
-	interrupt->YieldOnReturn();
+        interrupt->YieldOnReturn();
 }
 
 //----------------------------------------------------------------------
@@ -93,39 +95,39 @@ Initialize(int argc, char **argv)
 #endif
     
     for (argc--, argv++; argc > 0; argc -= argCount, argv += argCount) {
-	argCount = 1;
-	if (!strcmp(*argv, "-d")) {
-	    if (argc == 1)
-		debugArgs = "+";	// turn on all debug flags
-	    else {
-	    	debugArgs = *(argv + 1);
-	    	argCount = 2;
-	    }
-	} else if (!strcmp(*argv, "-rs")) {
-	    ASSERT(argc > 1);
-	    RandomInit(atoi(*(argv + 1)));	// initialize pseudo-random
-						// number generator
-	    randomYield = TRUE;
-	    argCount = 2;
-	}
+        argCount = 1;
+        if (!strcmp(*argv, "-d")) {
+            if (argc == 1)
+                debugArgs = "+";	// turn on all debug flags
+            else {
+                debugArgs = *(argv + 1);
+                argCount = 2;
+            }
+        } else if (!strcmp(*argv, "-rs")) {
+            ASSERT(argc > 1);
+            RandomInit(atoi(*(argv + 1)));	// initialize pseudo-random
+                        // number generator
+            randomYield = TRUE;
+            argCount = 2;
+        }
 #ifdef USER_PROGRAM
-	if (!strcmp(*argv, "-s"))
-	    debugUserProg = TRUE;
+        if (!strcmp(*argv, "-s"))
+            debugUserProg = TRUE;
 #endif
 #ifdef FILESYS_NEEDED
-	if (!strcmp(*argv, "-f"))
-	    format = TRUE;
+        if (!strcmp(*argv, "-f"))
+            format = TRUE;
 #endif
 #ifdef NETWORK
-	if (!strcmp(*argv, "-l")) {
-	    ASSERT(argc > 1);
-	    rely = atof(*(argv + 1));
-	    argCount = 2;
-	} else if (!strcmp(*argv, "-m")) {
-	    ASSERT(argc > 1);
-	    netname = atoi(*(argv + 1));
-	    argCount = 2;
-	}
+        if (!strcmp(*argv, "-l")) {
+            ASSERT(argc > 1);
+            rely = atof(*(argv + 1));
+            argCount = 2;
+        } else if (!strcmp(*argv, "-m")) {
+            ASSERT(argc > 1);
+            netname = atoi(*(argv + 1));
+            argCount = 2;
+        }
 #endif
     }
 
@@ -134,7 +136,7 @@ Initialize(int argc, char **argv)
     interrupt = new Interrupt;			// start up interrupt handling
     scheduler = new Scheduler();		// initialize the ready queue
     if (randomYield)				// start the timer (if needed)
-	timer = new Timer(TimerInterruptHandler, 0, randomYield);
+        timer = new Timer(TimerInterruptHandler, 0, randomYield);
 
     threadToBeDestroyed = NULL;
 
@@ -148,7 +150,11 @@ Initialize(int argc, char **argv)
     CallOnUserAbort(Cleanup);			// if user hits ctl-C
     
 #ifdef USER_PROGRAM
-    machine = new Machine(debugUserProg);	// this must come first
+    machine = new Machine(debugUserProg);	// must come first
+    
+    // Instantiate the Memory Manager with the total number of physical pages.
+    // NumPhysPages should be defined elsewhere
+    memoryManager = new MemoryManager(NumPhysPages);
 #endif
 
 #ifdef FILESYS
@@ -178,6 +184,9 @@ Cleanup()
     
 #ifdef USER_PROGRAM
     delete machine;
+    // Clean up the Memory Manager
+    if(memoryManager != NULL)
+        delete memoryManager;
 #endif
 
 #ifdef FILESYS_NEEDED
@@ -194,4 +203,5 @@ Cleanup()
     
     Exit(0);
 }
+
 
