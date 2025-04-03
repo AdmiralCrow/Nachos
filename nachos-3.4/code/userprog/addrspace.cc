@@ -132,6 +132,42 @@ AddrSpace::~AddrSpace()
     delete [] pageTable;
     delete pcb;  // Clean up the associated PCB.
 }
+//----------------------------------------------------------------------
+// AddrSpace::AddrSpace (Copy Constructor)
+//  Clone the address space of the parent (used by Fork).
+//----------------------------------------------------------------------
+AddrSpace::AddrSpace(AddrSpace *parent)
+{
+    numPages = parent->numPages;
+    pageTable = new TranslationEntry[numPages];
+
+    for (unsigned int i = 0; i < numPages; i++) {
+        pageTable[i].virtualPage = i;
+
+        int newPhysPage = memoryManager->getPage();
+        ASSERT(newPhysPage != -1);
+
+        pageTable[i].physicalPage = newPhysPage;
+        pageTable[i].valid = TRUE;
+        pageTable[i].use = FALSE;
+        pageTable[i].dirty = FALSE;
+        pageTable[i].readOnly = parent->pageTable[i].readOnly;
+
+        int parentPhysPage = parent->pageTable[i].physicalPage;
+        bcopy(&machine->mainMemory[parentPhysPage * PageSize],
+              &machine->mainMemory[newPhysPage * PageSize],
+              PageSize);
+    }
+
+    // Create PCB and set process ID
+    pcb = new PCB(currentThread);
+    int pid = processManager->getPID();
+    ASSERT(pid != -1);
+    pcb->setID(pid);
+
+    // NEW: Set parent process ID (needed for Join and Exit logic)
+    pcb->setParentID(parent->pcb->getID());
+}
 
 //----------------------------------------------------------------------
 // AddrSpace::InitRegisters

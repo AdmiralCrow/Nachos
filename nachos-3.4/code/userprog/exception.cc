@@ -112,7 +112,7 @@ ExceptionHandler(ExceptionType which)
             //   - Create a new thread and PCB.
             //   - Copy registers and set the PC to funcAddr.
             //   - Fork the new thread.
-            SpaceId childId = Fork((void (*)())funcAddr);
+            SpaceId childId = processManager->Fork(funcAddr);
             // Debug message (numPage is a placeholder for the actual allocated pages)
             DEBUG('a', "Process %d Fork: start at address 0x%x with %d pages memory\n",
                   currentThread->GetSpaceId(), funcAddr, /*numPage*/ 0);
