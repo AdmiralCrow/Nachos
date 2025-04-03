@@ -80,7 +80,7 @@ ExceptionHandler(ExceptionType which)
             DEBUG('a', "System Call: %d invoked Exit\n", currentThread->GetSpaceId());
             DEBUG('a', "Process %d exits with %d\n", currentThread->GetSpaceId(), status);
             // Call your kernel-level Exit() implementation here.
-            processManager->Exit(status);
+            Exit(status);
             break;
         }
 

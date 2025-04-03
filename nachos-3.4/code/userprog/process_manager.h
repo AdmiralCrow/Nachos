@@ -24,9 +24,6 @@ public:
     // Wait for a child process to finish
     int Join(int childId);
     
-    // Terminate the current process with the given status code.
-    void Exit(int status);
-
 private:
     BitMap *pidMap;      // Bitmap tracking used process IDs.
     PCB **pcbTable;      // Array of PCB pointers, indexed by process ID.
