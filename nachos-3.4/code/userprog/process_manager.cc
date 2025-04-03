@@ -55,3 +55,28 @@ PCB* ProcessManager::getPCB(int pid)
     lock->Release();
     return pcb;
 }
+
+int ProcessManager::Join(int childId)
+{
+    PCB* childPCB = getPCB(childId);
+    if (childPCB == NULL) return -1;
+
+    int parentId = currentThread->space->pcb->getID();
+    if (childPCB->getParentID() != parentId) return -1;
+
+    childPCB->waitForExit();
+    return childPCB->getExitStatus();
+}
+
+void ProcessManager::Exit(int status)
+{
+    int pid = currentThread->space->pcb->getID();
+    PCB* pcb = getPCB(pid);
+    ASSERT(pcb != NULL);
+
+    pcb->setExitStatus(status);
+    pcb->signalExit();      // Wake up any parent waiting in Join()
+    clearPID(pid);          // Remove from process table
+
+    currentThread->Finish();  // Terminate thread (never returns)
+}
