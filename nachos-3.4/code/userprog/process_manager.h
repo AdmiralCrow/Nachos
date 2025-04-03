@@ -21,9 +21,6 @@ public:
     // Get the PCB for a given process ID.
     PCB* getPCB(int pid);
 
-    // Wait for a child process to finish
-    int Join(int childId);
-    
 private:
     BitMap *pidMap;      // Bitmap tracking used process IDs.
     PCB **pcbTable;      // Array of PCB pointers, indexed by process ID.
