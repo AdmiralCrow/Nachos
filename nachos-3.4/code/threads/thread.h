@@ -127,6 +127,11 @@ class Thread {
     void RestoreUserState();		// restore user-level register state
 
     AddrSpace *space;			// User code this thread is running.
+    class PCB;  // forward declaration
+    PCB *pcb;   // add a pointer to the thread's PCB
+
+    void SetPCB(PCB *p) { pcb = p; }
+    int GetSpaceId();   // helper to access process ID
 #endif
 };
 
