@@ -7,7 +7,8 @@
 
 #include "copyright.h"
 #include "system.h"
-#include "memory_manager.h"  // Include the Memory Manager header
+#include "memory_manager.h"  
+#include "process_manager.h" 
 
 // This defines *all* of the global data structures used by Nachos.
 // These are all initialized and de-allocated by this file.
@@ -36,6 +37,8 @@ Machine *machine;	// user program memory and registers
 PostOffice *postOffice;
 #endif
 
+// Global
+ProcessManager *processManager = NULL;
 // Global Memory Manager instance
 MemoryManager *memoryManager = NULL;
 
@@ -155,6 +158,8 @@ Initialize(int argc, char **argv)
     // Instantiate the Memory Manager with the total number of physical pages.
     // NumPhysPages should be defined elsewhere
     memoryManager = new MemoryManager(NumPhysPages);
+    processManager = new ProcessManager(100); // Max 100 processes or adjust as needed
+
 #endif
 
 #ifdef FILESYS
@@ -187,6 +192,9 @@ Cleanup()
     // Clean up the Memory Manager
     if(memoryManager != NULL)
         delete memoryManager;
+    if (processManager != NULL)
+        delete processManager;
+
 #endif
 
 #ifdef FILESYS_NEEDED
@@ -200,6 +208,7 @@ Cleanup()
     delete timer;
     delete scheduler;
     delete interrupt;
+    
     
     Exit(0);
 }
