@@ -70,8 +70,6 @@ AddrSpace::AddrSpace(OpenFile *executable)
 
     // Check that we don't exceed physical memory (until virtual memory is implemented).
     ASSERT(numPages <= NumPhysPages);
-    DEBUG('a', "Requesting %d pages, available pages: %d\n", numPages, memoryManager->countFreePages());
-
 
     DEBUG('a', "Initializing address space, num pages %d, size %d\n", numPages, size);
 
@@ -82,16 +80,26 @@ AddrSpace::AddrSpace(OpenFile *executable)
     // Set up the translation:
     // Use the Memory Manager to allocate a free physical page for each virtual page.
     pageTable = new TranslationEntry[numPages];
+    int freePages = memoryManager->countFreePages();
+    DEBUG('a', "Requesting %d pages, available: %d\n", numPages, freePages);
+    ASSERT(numPages <= freePages); // Optional, can also gracefully handle below
+    
     for (i = 0; i < numPages; i++) {
-        pageTable[i].virtualPage = i;
         int physPage = memoryManager->getPage();
-        ASSERT(physPage != -1);  // Ensure a free physical page is available.
+        if (physPage == -1) {
+            printf("Out of memory: could not allocate page %d\n", i);
+            currentThread->Finish();  // Or call Exit(-1);
+            return;
+        }
+    
+        pageTable[i].virtualPage = i;
         pageTable[i].physicalPage = physPage;
         pageTable[i].valid = TRUE;
         pageTable[i].use = FALSE;
         pageTable[i].dirty = FALSE;
-        pageTable[i].readOnly = FALSE; // Could be set to TRUE for code segment pages if desired.
+        pageTable[i].readOnly = FALSE;
     }
+    
     
     for (i = 0; i < numPages; i++) {
         int physAddr = pageTable[i].physicalPage * PageSize;
