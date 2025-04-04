@@ -70,6 +70,8 @@ AddrSpace::AddrSpace(OpenFile *executable)
 
     // Check that we don't exceed physical memory (until virtual memory is implemented).
     ASSERT(numPages <= NumPhysPages);
+    DEBUG('a', "Requesting %d pages, available pages: %d\n", numPages, memoryManager->countFreePages());
+
 
     DEBUG('a', "Initializing address space, num pages %d, size %d\n", numPages, size);
 
