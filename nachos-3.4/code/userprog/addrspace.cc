@@ -82,6 +82,7 @@ AddrSpace::AddrSpace(OpenFile *executable)
     // Set up the translation:
     // Use the Memory Manager to allocate a free physical page for each virtual page.
     pageTable = new TranslationEntry[numPages];
+    ASSERT(memoryManager->countFreePages() >= (int)numPages);
     for (i = 0; i < numPages; i++) {
         pageTable[i].virtualPage = i;
         int physPage = memoryManager->getPage();
