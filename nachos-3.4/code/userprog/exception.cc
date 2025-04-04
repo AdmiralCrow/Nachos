@@ -25,6 +25,8 @@
 #include "copyright.h"
 #include "system.h"
 #include "syscall.h"
+#include "addrspace.h"
+
 
 //----------------------------------------------------------------------
 // ExceptionHandler
@@ -49,7 +51,7 @@
 //	are in machine.h.
 //----------------------------------------------------------------------
 
-
+SpaceId Fork(void (*func)());
 
 // Helper function to increment the program counter registers by 4 (one word)
 static void
@@ -151,3 +153,30 @@ ExceptionHandler(ExceptionType which)
     // Increment the program counter so that the syscall isn't re-executed.
     IncrementPC();
 }
+SpaceId Fork(void (*func)()) {
+    // STEP 1: Duplicate parent's address space
+    AddrSpace* parentSpace = currentThread->space;
+    ASSERT(parentSpace != nullptr);
+
+    AddrSpace* childSpace = new AddrSpace(*parentSpace); // Copy constructor required!
+
+    // STEP 2: Create new thread and assign address space
+    Thread* child = new Thread("ChildThread");
+    child->space = childSpace;
+
+    // STEP 3: Define what the new thread will run
+    auto ForkStart = [](int funcAddr) {
+        currentThread->space->RestoreState();
+        currentThread->space->InitRegisters();
+        machine->WriteRegister(PCReg, funcAddr);
+        machine->WriteRegister(NextPCReg, funcAddr + 4);
+        machine->Run();
+    };
+
+    // STEP 4: Fork new thread and pass function address
+    child->Fork(ForkStart, (int)func);
+
+    // STEP 5: Return the child's process ID
+    return child->GetSpaceId(); // Or use childSpace->pcb->getID() if using PCB
+}
+

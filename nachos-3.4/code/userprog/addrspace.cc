@@ -18,6 +18,10 @@
 #include "system.h"
 #include "addrspace.h"
 #include "noff.h"
+#include "synch.h"
+#include "process_manager.h"
+
+
 #ifdef HOST_SPARC
 #include <strings.h>
 #endif
@@ -80,19 +84,32 @@ AddrSpace::AddrSpace(OpenFile *executable)
     // Set up the translation:
     // Use the Memory Manager to allocate a free physical page for each virtual page.
     pageTable = new TranslationEntry[numPages];
+    int freePages = memoryManager->countFreePages();
+    DEBUG('a', "Requesting %d pages, available: %d\n", numPages, freePages);
+    ASSERT(numPages <= freePages); // Optional, can also gracefully handle below
+    
     for (i = 0; i < numPages; i++) {
-        pageTable[i].virtualPage = i;
         int physPage = memoryManager->getPage();
-        ASSERT(physPage != -1);  // Ensure a free physical page is available.
+        if (physPage == -1) {
+            printf("Out of memory: could not allocate page %d\n", i);
+            currentThread->Finish();  // Or call Exit(-1);
+            return;
+        }
+    
+        pageTable[i].virtualPage = i;
         pageTable[i].physicalPage = physPage;
         pageTable[i].valid = TRUE;
         pageTable[i].use = FALSE;
         pageTable[i].dirty = FALSE;
-        pageTable[i].readOnly = FALSE; // Could be set to TRUE for code segment pages if desired.
+        pageTable[i].readOnly = FALSE;
     }
     
-    // Zero out the entire address space.
-    bzero(machine->mainMemory, size);
+    
+    for (i = 0; i < numPages; i++) {
+        int physAddr = pageTable[i].physicalPage * PageSize;
+        bzero(&machine->mainMemory[physAddr], PageSize);
+    }
+    
 
     // Copy the code segment from the NOFF file into memory.
     if (noffH.code.size > 0) {
@@ -131,6 +148,42 @@ AddrSpace::~AddrSpace()
     }
     delete [] pageTable;
     delete pcb;  // Clean up the associated PCB.
+}
+
+//----------------------------------------------------------------------
+// AddrSpace::AddrSpace (copy constructor)
+//  Clone an existing address space (used in Fork)
+//----------------------------------------------------------------------
+AddrSpace::AddrSpace(AddrSpace *parent)
+{
+        numPages = parent->numPages;
+        pageTable = new TranslationEntry[numPages];
+
+        for (unsigned int i = 0; i < numPages; i++) {
+            int newPhysPage = memoryManager->getPage();
+            ASSERT(newPhysPage != -1); // Ensure page available
+
+            // Copy page table entry
+            pageTable[i].virtualPage = i;
+            pageTable[i].physicalPage = newPhysPage;
+            pageTable[i].valid = TRUE;
+            pageTable[i].use = FALSE;
+            pageTable[i].dirty = FALSE;
+            pageTable[i].readOnly = parent->pageTable[i].readOnly;
+
+            // Copy content from parent's physical page to new physical page
+            int parentPhysPage = parent->pageTable[i].physicalPage;
+            bcopy(&machine->mainMemory[parentPhysPage * PageSize],
+                &machine->mainMemory[newPhysPage * PageSize],
+                PageSize);
+        }
+
+        // Allocate a PCB for the new address space
+        int pid = processManager->getPID();
+        ASSERT(pid != -1);
+        pcb = new PCB(currentThread);
+        pcb->setID(pid);
+        processManager->setPCB(pid, pcb);
 }
 
 //----------------------------------------------------------------------
@@ -194,4 +247,3 @@ int AddrSpace::ReadFile(int virtAddr, OpenFile *file, int size, int fileAddr)
     delete [] buffer;
     return bytesRead;
 }
-

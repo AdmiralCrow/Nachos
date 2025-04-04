@@ -1,6 +1,7 @@
 {
     "files.associations": {
         ".fantomasignore": "ignore",
-        "ratio": "cpp"
+        "ratio": "cpp",
+        "thread": "cpp"
     }
 }
