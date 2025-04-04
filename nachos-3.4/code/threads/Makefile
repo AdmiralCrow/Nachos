@@ -1,408 +1,97 @@
-# NOTE: this is a GNU Makefile.  You must use "gmake" rather than "make".
+# use normal make for this Makefile
 #
-# Makefile for the threads assignment.  The threads assignment must
-#  be done first!
+# Makefile for building user programs to run on top of Nachos
 #
-# Copyright (c) 1992 The Regents of the University of California.
-# All rights reserved.  See copyright.h for copyright notice and limitation 
-# of liability and disclaimer of warranty provisions.
+# Several things to be aware of:
+#
+#    Nachos assumes that the location of the program startup routine (the
+# 	location the kernel jumps to when the program initially starts up)
+#       is at location 0.  This means: start.o must be the first .o passed 
+# 	to ld, in order for the routine "Start" to be loaded at location 0
+#
 
-DEFINES = -DTHREADS 
-#-DHW1_LOCKS  -DHW1_CONDITIONS -DHW1_SEMAPHORES -DHW1_ELEVATOR
-INCPATH = -I../threads -I../machine
-HFILES = $(THREAD_H)
-CFILES = $(THREAD_C)
-C_OFILES = $(THREAD_O)
+# if you are cross-compiling, you need to point to the right executables
+# and change the flags to ld and the build procedure for as
 
-include ../Makefile.common
-include ../Makefile.dep
-#-----------------------------------------------------------------
-# DO NOT DELETE THIS LINE -- make depend uses it
-# DEPENDENCIES MUST END AT END OF FILE
-main.o: ../threads/main.cc /usr/include/stdc-predef.h \
- ../threads/copyright.h ../threads/utility.h ../threads/bool.h \
- ../machine/sysdep.h ../threads/copyright.h /usr/include/stdio.h \
- /usr/include/bits/libc-header-start.h /usr/include/features.h \
- /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
- /usr/include/bits/long-double.h /usr/include/gnu/stubs.h \
- /usr/include/gnu/stubs-32.h \
- /usr/lib/gcc/x86_64-redhat-linux/8/include/stddef.h ../threads/stdarg.h \
- /usr/include/bits/types.h /usr/include/bits/typesizes.h \
- /usr/include/bits/types/__fpos_t.h /usr/include/bits/types/__mbstate_t.h \
- /usr/include/bits/types/__fpos64_t.h /usr/include/bits/types/__FILE.h \
- /usr/include/bits/types/FILE.h /usr/include/bits/types/struct_FILE.h \
- /usr/include/bits/types/cookie_io_functions_t.h \
- /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
- /usr/include/string.h /usr/include/bits/types/locale_t.h \
- /usr/include/bits/types/__locale_t.h /usr/include/strings.h \
- ../threads/system.h ../threads/thread.h ../threads/scheduler.h \
- ../threads/list.h ../machine/interrupt.h ../threads/list.h \
- ../machine/stats.h ../machine/timer.h ../threads/utility.h \
- ../threads/elevator.h ../threads/synch.h
-list.o: ../threads/list.cc /usr/include/stdc-predef.h \
- ../threads/copyright.h ../threads/list.h ../threads/utility.h \
- ../threads/bool.h ../machine/sysdep.h ../threads/copyright.h \
- /usr/include/stdio.h /usr/include/bits/libc-header-start.h \
- /usr/include/features.h /usr/include/sys/cdefs.h \
- /usr/include/bits/wordsize.h /usr/include/bits/long-double.h \
- /usr/include/gnu/stubs.h /usr/include/gnu/stubs-32.h \
- /usr/lib/gcc/x86_64-redhat-linux/8/include/stddef.h ../threads/stdarg.h \
- /usr/include/bits/types.h /usr/include/bits/typesizes.h \
- /usr/include/bits/types/__fpos_t.h /usr/include/bits/types/__mbstate_t.h \
- /usr/include/bits/types/__fpos64_t.h /usr/include/bits/types/__FILE.h \
- /usr/include/bits/types/FILE.h /usr/include/bits/types/struct_FILE.h \
- /usr/include/bits/types/cookie_io_functions_t.h \
- /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
- /usr/include/string.h /usr/include/bits/types/locale_t.h \
- /usr/include/bits/types/__locale_t.h /usr/include/strings.h
-scheduler.o: ../threads/scheduler.cc /usr/include/stdc-predef.h \
- ../threads/copyright.h ../threads/scheduler.h ../threads/list.h \
- ../threads/utility.h ../threads/bool.h ../machine/sysdep.h \
- ../threads/copyright.h /usr/include/stdio.h \
- /usr/include/bits/libc-header-start.h /usr/include/features.h \
- /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
- /usr/include/bits/long-double.h /usr/include/gnu/stubs.h \
- /usr/include/gnu/stubs-32.h \
- /usr/lib/gcc/x86_64-redhat-linux/8/include/stddef.h ../threads/stdarg.h \
- /usr/include/bits/types.h /usr/include/bits/typesizes.h \
- /usr/include/bits/types/__fpos_t.h /usr/include/bits/types/__mbstate_t.h \
- /usr/include/bits/types/__fpos64_t.h /usr/include/bits/types/__FILE.h \
- /usr/include/bits/types/FILE.h /usr/include/bits/types/struct_FILE.h \
- /usr/include/bits/types/cookie_io_functions_t.h \
- /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
- /usr/include/string.h /usr/include/bits/types/locale_t.h \
- /usr/include/bits/types/__locale_t.h /usr/include/strings.h \
- ../threads/thread.h ../threads/system.h ../machine/interrupt.h \
- ../threads/list.h ../machine/stats.h ../machine/timer.h \
- ../threads/utility.h
-synch.o: ../threads/synch.cc /usr/include/stdc-predef.h \
- ../threads/copyright.h ../threads/synch.h ../threads/thread.h \
- ../threads/utility.h ../threads/bool.h ../machine/sysdep.h \
- ../threads/copyright.h /usr/include/stdio.h \
- /usr/include/bits/libc-header-start.h /usr/include/features.h \
- /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
- /usr/include/bits/long-double.h /usr/include/gnu/stubs.h \
- /usr/include/gnu/stubs-32.h \
- /usr/lib/gcc/x86_64-redhat-linux/8/include/stddef.h ../threads/stdarg.h \
- /usr/include/bits/types.h /usr/include/bits/typesizes.h \
- /usr/include/bits/types/__fpos_t.h /usr/include/bits/types/__mbstate_t.h \
- /usr/include/bits/types/__fpos64_t.h /usr/include/bits/types/__FILE.h \
- /usr/include/bits/types/FILE.h /usr/include/bits/types/struct_FILE.h \
- /usr/include/bits/types/cookie_io_functions_t.h \
- /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
- /usr/include/string.h /usr/include/bits/types/locale_t.h \
- /usr/include/bits/types/__locale_t.h /usr/include/strings.h \
- ../threads/list.h ../threads/system.h ../threads/scheduler.h \
- ../machine/interrupt.h ../threads/list.h ../machine/stats.h \
- ../machine/timer.h ../threads/utility.h /usr/include/c++/8/cstdlib \
- /usr/include/c++/8/x86_64-redhat-linux/32/bits/c++config.h \
- /usr/include/c++/8/x86_64-redhat-linux/32/bits/os_defines.h \
- /usr/include/c++/8/x86_64-redhat-linux/32/bits/cpu_defines.h \
- /usr/include/stdlib.h /usr/include/bits/waitflags.h \
- /usr/include/bits/waitstatus.h /usr/include/bits/floatn.h \
- /usr/include/bits/floatn-common.h /usr/include/sys/types.h \
- /usr/include/bits/types/clock_t.h /usr/include/bits/types/clockid_t.h \
- /usr/include/bits/types/time_t.h /usr/include/bits/types/timer_t.h \
- /usr/include/bits/stdint-intn.h /usr/include/endian.h \
- /usr/include/bits/endian.h /usr/include/bits/byteswap.h \
- /usr/include/bits/uintn-identity.h /usr/include/sys/select.h \
- /usr/include/bits/select.h /usr/include/bits/types/sigset_t.h \
- /usr/include/bits/types/__sigset_t.h \
- /usr/include/bits/types/struct_timeval.h \
- /usr/include/bits/types/struct_timespec.h \
- /usr/include/bits/pthreadtypes.h /usr/include/bits/thread-shared-types.h \
- /usr/include/bits/pthreadtypes-arch.h /usr/include/alloca.h \
- /usr/include/bits/stdlib-float.h /usr/include/c++/8/bits/std_abs.h
-synchlist.o: ../threads/synchlist.cc /usr/include/stdc-predef.h \
- ../threads/copyright.h ../threads/synchlist.h ../threads/list.h \
- ../threads/utility.h ../threads/bool.h ../machine/sysdep.h \
- ../threads/copyright.h /usr/include/stdio.h \
- /usr/include/bits/libc-header-start.h /usr/include/features.h \
- /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
- /usr/include/bits/long-double.h /usr/include/gnu/stubs.h \
- /usr/include/gnu/stubs-32.h \
- /usr/lib/gcc/x86_64-redhat-linux/8/include/stddef.h ../threads/stdarg.h \
- /usr/include/bits/types.h /usr/include/bits/typesizes.h \
- /usr/include/bits/types/__fpos_t.h /usr/include/bits/types/__mbstate_t.h \
- /usr/include/bits/types/__fpos64_t.h /usr/include/bits/types/__FILE.h \
- /usr/include/bits/types/FILE.h /usr/include/bits/types/struct_FILE.h \
- /usr/include/bits/types/cookie_io_functions_t.h \
- /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
- /usr/include/string.h /usr/include/bits/types/locale_t.h \
- /usr/include/bits/types/__locale_t.h /usr/include/strings.h \
- ../threads/synch.h ../threads/thread.h
-system.o: ../threads/system.cc /usr/include/stdc-predef.h \
- ../threads/copyright.h ../threads/system.h ../threads/utility.h \
- ../threads/bool.h ../machine/sysdep.h ../threads/copyright.h \
- /usr/include/stdio.h /usr/include/bits/libc-header-start.h \
- /usr/include/features.h /usr/include/sys/cdefs.h \
- /usr/include/bits/wordsize.h /usr/include/bits/long-double.h \
- /usr/include/gnu/stubs.h /usr/include/gnu/stubs-32.h \
- /usr/lib/gcc/x86_64-redhat-linux/8/include/stddef.h ../threads/stdarg.h \
- /usr/include/bits/types.h /usr/include/bits/typesizes.h \
- /usr/include/bits/types/__fpos_t.h /usr/include/bits/types/__mbstate_t.h \
- /usr/include/bits/types/__fpos64_t.h /usr/include/bits/types/__FILE.h \
- /usr/include/bits/types/FILE.h /usr/include/bits/types/struct_FILE.h \
- /usr/include/bits/types/cookie_io_functions_t.h \
- /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
- /usr/include/string.h /usr/include/bits/types/locale_t.h \
- /usr/include/bits/types/__locale_t.h /usr/include/strings.h \
- ../threads/thread.h ../threads/scheduler.h ../threads/list.h \
- ../machine/interrupt.h ../threads/list.h ../machine/stats.h \
- ../machine/timer.h ../threads/utility.h
-thread.o: ../threads/thread.cc /usr/include/stdc-predef.h \
- ../threads/copyright.h ../threads/thread.h ../threads/utility.h \
- ../threads/bool.h ../machine/sysdep.h ../threads/copyright.h \
- /usr/include/stdio.h /usr/include/bits/libc-header-start.h \
- /usr/include/features.h /usr/include/sys/cdefs.h \
- /usr/include/bits/wordsize.h /usr/include/bits/long-double.h \
- /usr/include/gnu/stubs.h /usr/include/gnu/stubs-32.h \
- /usr/lib/gcc/x86_64-redhat-linux/8/include/stddef.h ../threads/stdarg.h \
- /usr/include/bits/types.h /usr/include/bits/typesizes.h \
- /usr/include/bits/types/__fpos_t.h /usr/include/bits/types/__mbstate_t.h \
- /usr/include/bits/types/__fpos64_t.h /usr/include/bits/types/__FILE.h \
- /usr/include/bits/types/FILE.h /usr/include/bits/types/struct_FILE.h \
- /usr/include/bits/types/cookie_io_functions_t.h \
- /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
- /usr/include/string.h /usr/include/bits/types/locale_t.h \
- /usr/include/bits/types/__locale_t.h /usr/include/strings.h \
- ../threads/switch.h ../threads/synch.h ../threads/list.h \
- ../threads/system.h ../threads/scheduler.h ../machine/interrupt.h \
- ../threads/list.h ../machine/stats.h ../machine/timer.h \
- ../threads/utility.h
-utility.o: ../threads/utility.cc /usr/include/stdc-predef.h \
- ../threads/copyright.h ../threads/utility.h ../threads/bool.h \
- ../machine/sysdep.h ../threads/copyright.h /usr/include/stdio.h \
- /usr/include/bits/libc-header-start.h /usr/include/features.h \
- /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
- /usr/include/bits/long-double.h /usr/include/gnu/stubs.h \
- /usr/include/gnu/stubs-32.h \
- /usr/lib/gcc/x86_64-redhat-linux/8/include/stddef.h ../threads/stdarg.h \
- /usr/include/bits/types.h /usr/include/bits/typesizes.h \
- /usr/include/bits/types/__fpos_t.h /usr/include/bits/types/__mbstate_t.h \
- /usr/include/bits/types/__fpos64_t.h /usr/include/bits/types/__FILE.h \
- /usr/include/bits/types/FILE.h /usr/include/bits/types/struct_FILE.h \
- /usr/include/bits/types/cookie_io_functions_t.h \
- /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
- /usr/include/string.h /usr/include/bits/types/locale_t.h \
- /usr/include/bits/types/__locale_t.h /usr/include/strings.h \
- ../threads/stdarg.h
-threadtest.o: ../threads/threadtest.cc /usr/include/stdc-predef.h \
- ../threads/copyright.h ../threads/system.h ../threads/utility.h \
- ../threads/bool.h ../machine/sysdep.h ../threads/copyright.h \
- /usr/include/stdio.h /usr/include/bits/libc-header-start.h \
- /usr/include/features.h /usr/include/sys/cdefs.h \
- /usr/include/bits/wordsize.h /usr/include/bits/long-double.h \
- /usr/include/gnu/stubs.h /usr/include/gnu/stubs-32.h \
- /usr/lib/gcc/x86_64-redhat-linux/8/include/stddef.h ../threads/stdarg.h \
- /usr/include/bits/types.h /usr/include/bits/typesizes.h \
- /usr/include/bits/types/__fpos_t.h /usr/include/bits/types/__mbstate_t.h \
- /usr/include/bits/types/__fpos64_t.h /usr/include/bits/types/__FILE.h \
- /usr/include/bits/types/FILE.h /usr/include/bits/types/struct_FILE.h \
- /usr/include/bits/types/cookie_io_functions_t.h \
- /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
- /usr/include/string.h /usr/include/bits/types/locale_t.h \
- /usr/include/bits/types/__locale_t.h /usr/include/strings.h \
- ../threads/thread.h ../threads/scheduler.h ../threads/list.h \
- ../machine/interrupt.h ../threads/list.h ../machine/stats.h \
- ../machine/timer.h ../threads/utility.h ../threads/synch.h \
- /usr/include/c++/8/cstdlib \
- /usr/include/c++/8/x86_64-redhat-linux/32/bits/c++config.h \
- /usr/include/c++/8/x86_64-redhat-linux/32/bits/os_defines.h \
- /usr/include/c++/8/x86_64-redhat-linux/32/bits/cpu_defines.h \
- /usr/include/stdlib.h /usr/include/bits/waitflags.h \
- /usr/include/bits/waitstatus.h /usr/include/bits/floatn.h \
- /usr/include/bits/floatn-common.h /usr/include/sys/types.h \
- /usr/include/bits/types/clock_t.h /usr/include/bits/types/clockid_t.h \
- /usr/include/bits/types/time_t.h /usr/include/bits/types/timer_t.h \
- /usr/include/bits/stdint-intn.h /usr/include/endian.h \
- /usr/include/bits/endian.h /usr/include/bits/byteswap.h \
- /usr/include/bits/uintn-identity.h /usr/include/sys/select.h \
- /usr/include/bits/select.h /usr/include/bits/types/sigset_t.h \
- /usr/include/bits/types/__sigset_t.h \
- /usr/include/bits/types/struct_timeval.h \
- /usr/include/bits/types/struct_timespec.h \
- /usr/include/bits/pthreadtypes.h /usr/include/bits/thread-shared-types.h \
- /usr/include/bits/pthreadtypes-arch.h /usr/include/alloca.h \
- /usr/include/bits/stdlib-float.h /usr/include/c++/8/bits/std_abs.h
-ElevatorTest.o: ../threads/ElevatorTest.cc /usr/include/stdc-predef.h \
- ../threads/copyright.h ../threads/system.h ../threads/utility.h \
- ../threads/bool.h ../machine/sysdep.h ../threads/copyright.h \
- /usr/include/stdio.h /usr/include/bits/libc-header-start.h \
- /usr/include/features.h /usr/include/sys/cdefs.h \
- /usr/include/bits/wordsize.h /usr/include/bits/long-double.h \
- /usr/include/gnu/stubs.h /usr/include/gnu/stubs-32.h \
- /usr/lib/gcc/x86_64-redhat-linux/8/include/stddef.h ../threads/stdarg.h \
- /usr/include/bits/types.h /usr/include/bits/typesizes.h \
- /usr/include/bits/types/__fpos_t.h /usr/include/bits/types/__mbstate_t.h \
- /usr/include/bits/types/__fpos64_t.h /usr/include/bits/types/__FILE.h \
- /usr/include/bits/types/FILE.h /usr/include/bits/types/struct_FILE.h \
- /usr/include/bits/types/cookie_io_functions_t.h \
- /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
- /usr/include/string.h /usr/include/bits/types/locale_t.h \
- /usr/include/bits/types/__locale_t.h /usr/include/strings.h \
- ../threads/thread.h ../threads/scheduler.h ../threads/list.h \
- ../machine/interrupt.h ../threads/list.h ../machine/stats.h \
- ../machine/timer.h ../threads/utility.h ../threads/synch.h \
- ../threads/elevator.h
-elevator.o: ../threads/elevator.cc /usr/include/stdc-predef.h \
- ../threads/copyright.h ../threads/system.h ../threads/utility.h \
- ../threads/bool.h ../machine/sysdep.h ../threads/copyright.h \
- /usr/include/stdio.h /usr/include/bits/libc-header-start.h \
- /usr/include/features.h /usr/include/sys/cdefs.h \
- /usr/include/bits/wordsize.h /usr/include/bits/long-double.h \
- /usr/include/gnu/stubs.h /usr/include/gnu/stubs-32.h \
- /usr/lib/gcc/x86_64-redhat-linux/8/include/stddef.h ../threads/stdarg.h \
- /usr/include/bits/types.h /usr/include/bits/typesizes.h \
- /usr/include/bits/types/__fpos_t.h /usr/include/bits/types/__mbstate_t.h \
- /usr/include/bits/types/__fpos64_t.h /usr/include/bits/types/__FILE.h \
- /usr/include/bits/types/FILE.h /usr/include/bits/types/struct_FILE.h \
- /usr/include/bits/types/cookie_io_functions_t.h \
- /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
- /usr/include/string.h /usr/include/bits/types/locale_t.h \
- /usr/include/bits/types/__locale_t.h /usr/include/strings.h \
- ../threads/thread.h ../threads/scheduler.h ../threads/list.h \
- ../machine/interrupt.h ../threads/list.h ../machine/stats.h \
- ../machine/timer.h ../threads/utility.h ../threads/synch.h \
- ../threads/elevator.h /usr/include/c++/8/cstdio \
- /usr/include/c++/8/x86_64-redhat-linux/32/bits/c++config.h \
- /usr/include/c++/8/x86_64-redhat-linux/32/bits/os_defines.h \
- /usr/include/c++/8/x86_64-redhat-linux/32/bits/cpu_defines.h \
- /usr/include/c++/8/cstdlib /usr/include/stdlib.h \
- /usr/include/bits/waitflags.h /usr/include/bits/waitstatus.h \
- /usr/include/bits/floatn.h /usr/include/bits/floatn-common.h \
- /usr/include/sys/types.h /usr/include/bits/types/clock_t.h \
- /usr/include/bits/types/clockid_t.h /usr/include/bits/types/time_t.h \
- /usr/include/bits/types/timer_t.h /usr/include/bits/stdint-intn.h \
- /usr/include/endian.h /usr/include/bits/endian.h \
- /usr/include/bits/byteswap.h /usr/include/bits/uintn-identity.h \
- /usr/include/sys/select.h /usr/include/bits/select.h \
- /usr/include/bits/types/sigset_t.h /usr/include/bits/types/__sigset_t.h \
- /usr/include/bits/types/struct_timeval.h \
- /usr/include/bits/types/struct_timespec.h \
- /usr/include/bits/pthreadtypes.h /usr/include/bits/thread-shared-types.h \
- /usr/include/bits/pthreadtypes-arch.h /usr/include/alloca.h \
- /usr/include/bits/stdlib-float.h /usr/include/c++/8/bits/std_abs.h \
- /usr/include/c++/8/cstring
-interrupt.o: ../machine/interrupt.cc /usr/include/stdc-predef.h \
- ../threads/copyright.h ../machine/interrupt.h ../threads/list.h \
- ../threads/copyright.h ../threads/utility.h ../threads/bool.h \
- ../machine/sysdep.h /usr/include/stdio.h \
- /usr/include/bits/libc-header-start.h /usr/include/features.h \
- /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
- /usr/include/bits/long-double.h /usr/include/gnu/stubs.h \
- /usr/include/gnu/stubs-32.h \
- /usr/lib/gcc/x86_64-redhat-linux/8/include/stddef.h ../threads/stdarg.h \
- /usr/include/bits/types.h /usr/include/bits/typesizes.h \
- /usr/include/bits/types/__fpos_t.h /usr/include/bits/types/__mbstate_t.h \
- /usr/include/bits/types/__fpos64_t.h /usr/include/bits/types/__FILE.h \
- /usr/include/bits/types/FILE.h /usr/include/bits/types/struct_FILE.h \
- /usr/include/bits/types/cookie_io_functions_t.h \
- /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
- /usr/include/string.h /usr/include/bits/types/locale_t.h \
- /usr/include/bits/types/__locale_t.h /usr/include/strings.h \
- ../threads/system.h ../threads/thread.h ../threads/scheduler.h \
- ../threads/list.h ../machine/interrupt.h ../machine/stats.h \
- ../machine/timer.h ../threads/utility.h
-sysdep.o: ../machine/sysdep.cc /usr/include/stdc-predef.h \
- ../threads/copyright.h /usr/include/stdio.h \
- /usr/include/bits/libc-header-start.h /usr/include/features.h \
- /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
- /usr/include/bits/long-double.h /usr/include/gnu/stubs.h \
- /usr/include/gnu/stubs-32.h \
- /usr/lib/gcc/x86_64-redhat-linux/8/include/stddef.h ../threads/stdarg.h \
- /usr/include/bits/types.h /usr/include/bits/typesizes.h \
- /usr/include/bits/types/__fpos_t.h /usr/include/bits/types/__mbstate_t.h \
- /usr/include/bits/types/__fpos64_t.h /usr/include/bits/types/__FILE.h \
- /usr/include/bits/types/FILE.h /usr/include/bits/types/struct_FILE.h \
- /usr/include/bits/types/cookie_io_functions_t.h \
- /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
- /usr/include/c++/8/stdlib.h /usr/include/c++/8/cstdlib \
- /usr/include/c++/8/x86_64-redhat-linux/32/bits/c++config.h \
- /usr/include/c++/8/x86_64-redhat-linux/32/bits/os_defines.h \
- /usr/include/c++/8/x86_64-redhat-linux/32/bits/cpu_defines.h \
- /usr/include/stdlib.h /usr/include/bits/waitflags.h \
- /usr/include/bits/waitstatus.h /usr/include/bits/floatn.h \
- /usr/include/bits/floatn-common.h /usr/include/bits/types/locale_t.h \
- /usr/include/bits/types/__locale_t.h /usr/include/sys/types.h \
- /usr/include/bits/types/clock_t.h /usr/include/bits/types/clockid_t.h \
- /usr/include/bits/types/time_t.h /usr/include/bits/types/timer_t.h \
- /usr/include/bits/stdint-intn.h /usr/include/endian.h \
- /usr/include/bits/endian.h /usr/include/bits/byteswap.h \
- /usr/include/bits/uintn-identity.h /usr/include/sys/select.h \
- /usr/include/bits/select.h /usr/include/bits/types/sigset_t.h \
- /usr/include/bits/types/__sigset_t.h \
- /usr/include/bits/types/struct_timeval.h \
- /usr/include/bits/types/struct_timespec.h \
- /usr/include/bits/pthreadtypes.h /usr/include/bits/thread-shared-types.h \
- /usr/include/bits/pthreadtypes-arch.h /usr/include/alloca.h \
- /usr/include/bits/stdlib-float.h /usr/include/c++/8/bits/std_abs.h \
- /usr/include/string.h /usr/include/strings.h /usr/include/signal.h \
- /usr/include/bits/signum.h /usr/include/bits/signum-generic.h \
- /usr/include/bits/types/sig_atomic_t.h \
- /usr/include/bits/types/siginfo_t.h /usr/include/bits/types/__sigval_t.h \
- /usr/include/bits/siginfo-arch.h /usr/include/bits/siginfo-consts.h \
- /usr/include/bits/siginfo-consts-arch.h \
- /usr/include/bits/types/sigval_t.h /usr/include/bits/types/sigevent_t.h \
- /usr/include/bits/sigevent-consts.h /usr/include/bits/sigaction.h \
- /usr/include/bits/sigcontext.h /usr/include/bits/types/stack_t.h \
- /usr/include/sys/ucontext.h /usr/include/bits/sigstack.h \
- /usr/include/bits/ss_flags.h /usr/include/bits/types/struct_sigstack.h \
- /usr/include/bits/sigthread.h /usr/include/sys/time.h \
- /usr/include/sys/socket.h /usr/include/bits/types/struct_iovec.h \
- /usr/include/bits/socket.h /usr/include/bits/socket_type.h \
- /usr/include/bits/sockaddr.h /usr/include/asm/socket.h \
- /usr/include/asm-generic/socket.h /usr/include/asm/sockios.h \
- /usr/include/asm-generic/sockios.h \
- /usr/include/bits/types/struct_osockaddr.h /usr/include/sys/file.h \
- /usr/include/fcntl.h /usr/include/bits/fcntl.h \
- /usr/include/bits/fcntl-linux.h /usr/include/linux/falloc.h \
- /usr/include/bits/stat.h /usr/include/sys/un.h /usr/include/sys/mman.h \
- /usr/include/bits/mman.h /usr/include/bits/mman-linux.h \
- /usr/include/bits/mman-shared.h /usr/include/unistd.h \
- /usr/include/bits/posix_opt.h /usr/include/bits/environments.h \
- /usr/include/bits/confname.h /usr/include/bits/getopt_posix.h \
- /usr/include/bits/getopt_core.h ../machine/interrupt.h ../threads/list.h \
- ../threads/copyright.h ../threads/utility.h ../threads/bool.h \
- ../machine/sysdep.h ../threads/system.h ../threads/thread.h \
- ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
- ../machine/stats.h ../machine/timer.h ../threads/utility.h
-stats.o: ../machine/stats.cc /usr/include/stdc-predef.h \
- ../threads/copyright.h ../threads/utility.h ../threads/copyright.h \
- ../threads/bool.h ../machine/sysdep.h /usr/include/stdio.h \
- /usr/include/bits/libc-header-start.h /usr/include/features.h \
- /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
- /usr/include/bits/long-double.h /usr/include/gnu/stubs.h \
- /usr/include/gnu/stubs-32.h \
- /usr/lib/gcc/x86_64-redhat-linux/8/include/stddef.h ../threads/stdarg.h \
- /usr/include/bits/types.h /usr/include/bits/typesizes.h \
- /usr/include/bits/types/__fpos_t.h /usr/include/bits/types/__mbstate_t.h \
- /usr/include/bits/types/__fpos64_t.h /usr/include/bits/types/__FILE.h \
- /usr/include/bits/types/FILE.h /usr/include/bits/types/struct_FILE.h \
- /usr/include/bits/types/cookie_io_functions_t.h \
- /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
- /usr/include/string.h /usr/include/bits/types/locale_t.h \
- /usr/include/bits/types/__locale_t.h /usr/include/strings.h \
- ../machine/stats.h
-timer.o: ../machine/timer.cc /usr/include/stdc-predef.h \
- ../threads/copyright.h ../machine/timer.h ../threads/utility.h \
- ../threads/copyright.h ../threads/bool.h ../machine/sysdep.h \
- /usr/include/stdio.h /usr/include/bits/libc-header-start.h \
- /usr/include/features.h /usr/include/sys/cdefs.h \
- /usr/include/bits/wordsize.h /usr/include/bits/long-double.h \
- /usr/include/gnu/stubs.h /usr/include/gnu/stubs-32.h \
- /usr/lib/gcc/x86_64-redhat-linux/8/include/stddef.h ../threads/stdarg.h \
- /usr/include/bits/types.h /usr/include/bits/typesizes.h \
- /usr/include/bits/types/__fpos_t.h /usr/include/bits/types/__mbstate_t.h \
- /usr/include/bits/types/__fpos64_t.h /usr/include/bits/types/__FILE.h \
- /usr/include/bits/types/FILE.h /usr/include/bits/types/struct_FILE.h \
- /usr/include/bits/types/cookie_io_functions_t.h \
- /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
- /usr/include/string.h /usr/include/bits/types/locale_t.h \
- /usr/include/bits/types/__locale_t.h /usr/include/strings.h \
- ../threads/system.h ../threads/utility.h ../threads/thread.h \
- ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
- ../threads/list.h ../machine/stats.h ../machine/timer.h
-# DEPENDENCIES MUST END AT END OF FILE
-# IF YOU PUT STUFF HERE IT WILL GO AWAY
-# see make depend above
+GCCDIR = ../../../gnu-decstation-ultrix/decstation-ultrix/2.95.3/
+
+LDFLAGS = -T script -N
+ASFLAGS = -mips2
+CPPFLAGS = $(INCDIR)
+
+# if you aren't cross-compiling:
+# GCCDIR =
+# LDFLAGS = -N -T 0
+# ASFLAGS =
+# CPPFLAGS = -P $(INCDIR)
+
+PATH = $(GCCDIR):/lib:/usr/bin:/bin
+
+CC = $(GCCDIR)gcc -B../../../gnu-decstation-ultrix/
+AS = $(GCCDIR)as
+LD = $(GCCDIR)ld
+
+CPP = gcc -E
+INCDIR =-I../userprog -I../threads
+CFLAGS = -G 0 -c $(INCDIR)
+
+all: halt shell matmult sort fork join kill exec memory
+
+start.o: start.s ../userprog/syscall.h
+	$(CPP) $(CPPFLAGS) start.c > strt.s
+	$(AS) $(ASFLAGS) -o start.o strt.s
+	rm strt.s
+
+fork.o: fork.c
+	$(CC) $(CFLAGS) fork.c
+fork: fork.o start.o
+	$(LD) $(LDFLAGS) start.o fork.o -o fork.coff
+	../bin/coff2noff fork.coff fork 
+
+join.o: join.c
+	$(CC) $(CFLAGS) join.c
+join:   join.o start.o
+	$(LD) $(LDFLAGS) start.o join.o -o join.coff
+	../bin/coff2noff join.coff join 
+
+kill.o: kill.c
+	$(CC) $(CFLAGS) kill.c
+kill:   kill.o start.o
+	$(LD) $(LDFLAGS) start.o kill.o -o kill.coff
+	../bin/coff2noff kill.coff kill 
+
+exec.o: exec.c
+	$(CC) $(CFLAGS) exec.c
+exec: exec.o start.o
+	$(LD) $(LDFLAGS) start.o exec.o -o exec.coff
+	../bin/coff2noff exec.coff exec 
+
+halt.o: halt.c
+	$(CC) $(CFLAGS) -c halt.c
+halt: halt.o start.o
+	$(LD) $(LDFLAGS) start.o halt.o -o halt.coff
+	../bin/coff2noff halt.coff halt
+
+shell.o: shell.c
+	$(CC) $(CFLAGS) -c shell.c
+shell: shell.o start.o
+	$(LD) $(LDFLAGS) start.o shell.o -o shell.coff
+	../bin/coff2noff shell.coff shell
+
+sort.o: sort.c
+	$(CC) $(CFLAGS) -c sort.c
+sort: sort.o start.o
+	$(LD) $(LDFLAGS) start.o sort.o -o sort.coff
+	../bin/coff2noff sort.coff sort
+
+matmult.o: matmult.c
+	$(CC) $(CFLAGS) -c matmult.c
+matmult: matmult.o start.o
+	$(LD) $(LDFLAGS) start.o matmult.o -o matmult.coff
+	../bin/coff2noff matmult.coff matmult
+
+memory.o: memory.c
+	$(CC) $(CFLAGS) memory.c
+memory: memory.o start.o
+	$(LD) $(LDFLAGS) start.o memory.o -o memory.coff
+	../bin/coff2noff memory.coff memory 
