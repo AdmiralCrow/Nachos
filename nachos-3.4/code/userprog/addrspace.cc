@@ -82,7 +82,6 @@ AddrSpace::AddrSpace(OpenFile *executable)
     // Set up the translation:
     // Use the Memory Manager to allocate a free physical page for each virtual page.
     pageTable = new TranslationEntry[numPages];
-    ASSERT(memoryManager->countFreePages() >= (int)numPages);
     for (i = 0; i < numPages; i++) {
         pageTable[i].virtualPage = i;
         int physPage = memoryManager->getPage();
@@ -94,8 +93,11 @@ AddrSpace::AddrSpace(OpenFile *executable)
         pageTable[i].readOnly = FALSE; // Could be set to TRUE for code segment pages if desired.
     }
     
-    // Zero out the entire address space.
-    bzero(machine->mainMemory, size);
+    for (i = 0; i < numPages; i++) {
+        int physAddr = pageTable[i].physicalPage * PageSize;
+        bzero(&machine->mainMemory[physAddr], PageSize);
+    }
+    
 
     // Copy the code segment from the NOFF file into memory.
     if (noffH.code.size > 0) {
