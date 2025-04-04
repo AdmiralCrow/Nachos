@@ -134,6 +134,42 @@ AddrSpace::~AddrSpace()
 }
 
 //----------------------------------------------------------------------
+// AddrSpace::AddrSpace (copy constructor)
+//  Clone an existing address space (used in Fork)
+//----------------------------------------------------------------------
+AddrSpace::AddrSpace(AddrSpace *parent)
+{
+        numPages = parent->numPages;
+        pageTable = new TranslationEntry[numPages];
+
+        for (unsigned int i = 0; i < numPages; i++) {
+            int newPhysPage = memoryManager->getPage();
+            ASSERT(newPhysPage != -1); // Ensure page available
+
+            // Copy page table entry
+            pageTable[i].virtualPage = i;
+            pageTable[i].physicalPage = newPhysPage;
+            pageTable[i].valid = TRUE;
+            pageTable[i].use = FALSE;
+            pageTable[i].dirty = FALSE;
+            pageTable[i].readOnly = parent->pageTable[i].readOnly;
+
+            // Copy content from parent's physical page to new physical page
+            int parentPhysPage = parent->pageTable[i].physicalPage;
+            bcopy(&machine->mainMemory[parentPhysPage * PageSize],
+                &machine->mainMemory[newPhysPage * PageSize],
+                PageSize);
+        }
+
+        // Allocate a PCB for the new address space
+        int pid = processManager->getPID();
+        ASSERT(pid != -1);
+        pcb = new PCB(currentThread);
+        pcb->setID(pid);
+        processManager->setPCB(pid, pcb);
+}
+
+//----------------------------------------------------------------------
 // AddrSpace::InitRegisters
 // 	Set the initial values for the user-level register set.
 //----------------------------------------------------------------------
