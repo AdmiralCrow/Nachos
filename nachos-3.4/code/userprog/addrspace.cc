@@ -19,9 +19,7 @@
 #include "addrspace.h"
 #include "noff.h"
 #include "synch.h"
-#include "process_manager.h"
-
-
+#include "pcb.h"
 #ifdef HOST_SPARC
 #include <strings.h>
 #endif
