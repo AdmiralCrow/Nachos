@@ -28,3 +28,11 @@ void MemoryManager::clearPage(int pageId) {
     bitmap->Clear(pageId);
     lock->Release();
 }
+
+int MemoryManager::countFreePages() {
+    lock->Acquire();
+    int count = bitmap->NumClear();  // Count number of free pages
+    lock->Release();
+    return count;
+}
+

@@ -18,6 +18,7 @@ public:
     
     // Frees the page at the given index.
     void clearPage(int pageId);
+    int countFreePages(); 
 
 private:
     BitMap *bitmap;  // Bitmap to track free/used physical pages.
