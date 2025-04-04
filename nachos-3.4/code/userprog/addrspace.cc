@@ -18,6 +18,8 @@
 #include "system.h"
 #include "addrspace.h"
 #include "noff.h"
+#include "synch.h"
+#include "pcb.h"
 #ifdef HOST_SPARC
 #include <strings.h>
 #endif
