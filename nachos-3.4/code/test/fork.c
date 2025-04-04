@@ -15,11 +15,6 @@ void sum(){
 
 int main()
 {
-	global_cnt++;
-
-	Fork(sum);
-	Yield();
-
-	global_cnt++;
-	Exit(global_cnt); 
+    Fork(sum);
+    Exit(0);
 }
