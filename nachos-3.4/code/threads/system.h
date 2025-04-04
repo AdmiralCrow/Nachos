@@ -15,7 +15,9 @@
 #include "interrupt.h"
 #include "stats.h"
 #include "timer.h"
+#include "synch.h"
 #include "memory_manager.h"  // Included Memory Manager header
+
 
 // Initialization and cleanup routines
 extern void Initialize(int argc, char **argv); 	// Initialization,
@@ -52,6 +54,7 @@ extern PostOffice* postOffice;
 
 // Global Memory Manager instance
 extern MemoryManager *memoryManager;
+extern ProcessManager *processManager;
 
 #endif // SYSTEM_H
 
