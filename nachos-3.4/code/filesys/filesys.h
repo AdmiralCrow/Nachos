@@ -91,8 +91,6 @@ class FileSystem {
    OpenFile* directoryFile;		// "Root" directory -- list of 
 					// file names, represented as a file
 };
-extern FileSystem *fileSystem;
-
 
 #endif // FILESYS
 

@@ -53,7 +53,6 @@
 #include "utility.h"
 #include "system.h"
 #include "elevator.h"
-#include "filesys.h"
 
 #ifdef THREADS
 extern int testnum;
@@ -88,7 +87,6 @@ main(int argc, char **argv)
 
     DEBUG('t', "Entering main");
     (void) Initialize(argc, argv);
-	
     
 #ifdef THREADS
     for (argc--, argv++; argc > 0; argc -= argCount, argv += argCount) {
@@ -149,15 +147,6 @@ main(int argc, char **argv)
 	} else if (!strcmp(*argv, "-t")) {	// performance test
             PerformanceTest();
 	}
-	FileSystem *fileSystem;
-	bool format = FALSE;
-    for (int i = 1; i < argc; i++) {
-        if (!strcmp(argv[i], "-f")) {
-            format = TRUE;
-            break;
-        }
-    }
-    fileSystem = new FileSystem(format);
 #endif // FILESYS
 #ifdef NETWORK
         if (!strcmp(*argv, "-o")) {
@@ -184,5 +173,4 @@ main(int argc, char **argv)
 				// "main" thread is finished, preventing
 				// it from returning.
     return(0);			// Not reached...
-
 }
