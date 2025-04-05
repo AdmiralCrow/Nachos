@@ -1,5 +1,5 @@
 // system.h 
-//	All global variables used in Nachos are defined here.
+//    All global variables used in Nachos are defined here.
 //
 // Copyright (c) 1992-1993 The Regents of the University of California.
 // All rights reserved.  See copyright.h for copyright notice and limitation 
@@ -15,29 +15,28 @@
 #include "interrupt.h"
 #include "stats.h"
 #include "timer.h"
-#include "synch.h"
-#include "memory_manager.h"  // Included Memory Manager header
 
+// Include headers for multiprogramming support:
+#include "memory_manager.h"    // Memory Manager header
+#include "process_manager.h"   // Process Manager header
 
 // Initialization and cleanup routines
-extern void Initialize(int argc, char **argv); 	// Initialization,
-// called before anything else
-extern void Cleanup();				// Cleanup, called when
-						// Nachos is done.
+extern void Initialize(int argc, char **argv);  // Called before anything else
+extern void Cleanup();                          // Called when Nachos is done
 
-extern Thread *currentThread;			// the thread holding the CPU
-extern Thread *threadToBeDestroyed;  		// the thread that just finished
-extern Scheduler *scheduler;			// the ready list
-extern Interrupt *interrupt;			// interrupt status
-extern Statistics *stats;			// performance metrics
-extern Timer *timer;				// the hardware alarm clock
+extern Thread *currentThread;          // The thread currently holding the CPU
+extern Thread *threadToBeDestroyed;    // The thread that just finished
+extern Scheduler *scheduler;           // The ready list
+extern Interrupt *interrupt;           // Interrupt status
+extern Statistics *stats;              // Performance metrics
+extern Timer *timer;                   // The hardware timer device
 
 #ifdef USER_PROGRAM
 #include "machine.h"
-extern Machine* machine;	// user program memory and registers
+extern Machine* machine;               // User program memory and registers
 #endif
 
-#ifdef FILESYS_NEEDED 		// FILESYS or FILESYS_STUB 
+#ifdef FILESYS_NEEDED   // FILESYS or FILESYS_STUB
 #include "filesys.h"
 extern FileSystem  *fileSystem;
 #endif
@@ -52,9 +51,15 @@ extern SynchDisk   *synchDisk;
 extern PostOffice* postOffice;
 #endif
 
-// Global Memory Manager instance
+// Global Memory Manager instance (to manage physical memory pages)
 extern MemoryManager *memoryManager;
+
+// Define a maximum number of user processes supported (adjust as needed)
+#define MAX_PROCESSES 128
+
+// Global Process Manager instance (to manage PCBs and process IDs)
 extern ProcessManager *processManager;
 
 #endif // SYSTEM_H
+
 
