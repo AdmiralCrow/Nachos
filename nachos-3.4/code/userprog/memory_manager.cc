@@ -21,7 +21,8 @@ int MemoryManager::AllocatePage() {
 int MemoryManager::DeallocatePage(int which) {
     if(bitmap.Test(which)== false) return -1;
     else{
-        bitmap.Cle
+        bitmap.Clear(which);
+        return 0;
     }
 
 }
