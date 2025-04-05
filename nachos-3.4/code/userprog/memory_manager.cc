@@ -13,6 +13,19 @@ MemoryManager::~MemoryManager() {
     delete lock;
 }
 
+int MemoryManager::AllocatePage() {
+    return bitmap->Find();
+
+}
+
+int MemoryManager::DeallocatePage(int which) {
+    if(bitmap.Test(which)== false) return -1;
+    else{
+        bitmap.Cle
+    }
+
+}
+
 int MemoryManager::getPage() {
     // Acquire the lock to ensure thread safety.
     lock->Acquire();
