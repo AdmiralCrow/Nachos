@@ -125,7 +125,11 @@ void Close(OpenFileId id);
 /* Fork a thread to run a procedure ("func") in the *same* address space 
  * as the current thread.
  */
-void Fork(void (*func)());
+
+
+//void Fork(void (*func)());
+SpaceId Fork(void (*func)());
+
 
 /* Yield the CPU to another runnable thread, whether in this address space 
  * or not. 
@@ -135,4 +139,5 @@ void Yield();
 #endif /* IN_ASM */
 
 #endif /* SYSCALL_H */
+
 
