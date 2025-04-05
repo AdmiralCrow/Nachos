@@ -1,6 +1,7 @@
 #ifndef MEMORY_MANAGER_H
 #define MEMORY_MANAGER_H
 
+#include "copyright.h"
 #include "bitmap.h"
 #include "synch.h"
 
@@ -25,3 +26,4 @@ private:
 };
 
 #endif // MEMORY_MANAGER_H
+
