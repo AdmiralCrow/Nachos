@@ -1,19 +1,19 @@
 # This is part of a GNU Makefile, included by the Makefiles in
-# each of the subdirectories.  
+# each of the subdirectories.
 #
 # This file includes all of the baseline code provided by Nachos.
-# Whenever you add a .h or .cc file, put it in the appropriate 
+# Whenever you add a .h or .cc file, put it in the appropriate
 # _H,_C, or _O list.
 #
 # The dependency graph between assignments is:
 #   1. THREADS before everything else
 #   2. USERPROG must come before VM
-#   3. USERPROG can come before or after FILESYS, but if USERPROG comes 
+#   3. USERPROG can come before or after FILESYS, but if USERPROG comes
 #	before (as in this distribution), then it must define FILESYS_STUB
 #
 #   Other than that, you have complete flexibility.
 #
-# Also whenever you change the include structure of your program, you should 
+# Also whenever you change the include structure of your program, you should
 # do a gmake depend in the subdirectory -- this will modify the Makefile
 # to keep track of the new dependency.
 
@@ -22,10 +22,10 @@
 # you need to call some inline functions from the debugger.
 
 # Copyright (c) 1992 The Regents of the University of California.
-# All rights reserved.  See copyright.h for copyright notice and limitation 
+# All rights reserved.  See copyright.h for copyright notice and limitation
 # of liability and disclaimer of warranty provisions.
 
-CFLAGS = -g -Wall -Wshadow -m32 $(INCPATH) $(DEFINES) $(HOST) -DCHANGED 
+CFLAGS = -g -Wall -Wshadow -m32 $(INCPATH) $(DEFINES) $(HOST) -DCHANGED
 
 # These definitions may change as the software is updated.
 # Some of them are also system dependent
@@ -47,7 +47,8 @@ THREAD_H =../threads/copyright.h\
 	../machine/interrupt.h\
 	../machine/sysdep.h\
 	../machine/stats.h\
-	../machine/timer.h
+	../machine/timer.h \
+	../threads/elevator.h
 
 THREAD_C =../threads/main.cc\
 	../threads/list.cc\
@@ -57,22 +58,28 @@ THREAD_C =../threads/main.cc\
 	../threads/system.cc\
 	../threads/thread.cc\
 	../threads/utility.cc\
+	../threads/semaphore_ping.cc\
+	../threads/lockTest.cc\
+	../threads/ping.cc \
 	../threads/threadtest.cc\
-	../threads/ElevatorTest.cc\
-	../threads/elevator.cc\
 	../machine/interrupt.cc\
 	../machine/sysdep.cc\
 	../machine/stats.cc\
-	../machine/timer.cc
+	../machine/timer.cc \
+	../threads/elevator.cc \
+	../threads/ElevatorTest.cc
 
 THREAD_S = ../threads/switch.s
 
 THREAD_O =main.o list.o scheduler.o synch.o synchlist.o system.o thread.o \
-	utility.o threadtest.o ElevatorTest.o elevator.o interrupt.o stats.o sysdep.o timer.o
+	utility.o semaphore_ping.o lockTest.o ping.o threadtest.o interrupt.o stats.o sysdep.o timer.o \
+	elevator.o ElevatorTest.o
 
 USERPROG_H = ../userprog/addrspace.h\
 	../userprog/bitmap.h\
-	../userprog/memorymanager.h
+	../userprog/memorymanager.h\
+	../userprog/pcbmanager.h\
+	../userprog/pcb.h\
 	../filesys/filesys.h\
 	../filesys/openfile.h\
 	../machine/console.h\
@@ -83,6 +90,8 @@ USERPROG_H = ../userprog/addrspace.h\
 USERPROG_C = ../userprog/addrspace.cc\
 	../userprog/bitmap.cc\
 	../userprog/memorymanager.cc\
+	../userprog/pcbmanager.cc\
+	../userprog/pcb.cc\
 	../userprog/exception.cc\
 	../userprog/progtest.cc\
 	../machine/console.cc\
@@ -90,12 +99,12 @@ USERPROG_C = ../userprog/addrspace.cc\
 	../machine/mipssim.cc\
 	../machine/translate.cc
 
-USERPROG_O = addrspace.o bitmap.o exception.o memorymanager.o progtest.o console.o machine.o \
+USERPROG_O = addrspace.o bitmap.o memorymanager.o pcb.o pcbmanager.o exception.o progtest.o console.o machine.o \
 	mipssim.o translate.o
 
-VM_H = 
-VM_C = 
-VM_O = 
+VM_H =
+VM_C =
+VM_O =
 
 FILESYS_H =../filesys/directory.h \
 	../filesys/filehdr.h\
@@ -132,13 +141,12 @@ switch.o: ../threads/switch.s
 	$(AS) -o switch.o swtch.s
 
 depend: $(CFILES) $(HFILES)
-	$(CC) $(INCPATH) $(DEFINES) $(HOST) -DCHANGED -M $(CFILES) > makedep
+	$(CC) $(INCPATH) $(DEFINES) $(HOST) -M $(CFILES) > makedep
 	echo '/^# DO NOT DELETE THIS LINE/+2,$$d' >eddep
 	echo '$$r makedep' >>eddep
 	echo 'w' >>eddep
 	ed - Makefile < eddep
-	rm eddep makedep 
+	rm eddep makedep
 	echo '# DEPENDENCIES MUST END AT END OF FILE' >> Makefile
 	echo '# IF YOU PUT STUFF HERE IT WILL GO AWAY' >> Makefile
 	echo '# see make depend above' >> Makefile
-
