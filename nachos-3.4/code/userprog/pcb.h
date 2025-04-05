@@ -1,26 +1,28 @@
 #ifndef PCB_H
 #define PCB_H
 
-#include "synch.h"
+#include "thread.h"   // for Thread*
 
-// Forward declaration
+class Condition;
 class Thread;
 
 class PCB {
 public:
-    PCB(Thread *thread);  // Create a PCB for a process with the associated thread.
+    PCB(Thread *thread);  
     ~PCB();
 
-    int getID() const;       // Return the process ID.
-    void setID(int id);      // Set the process ID.
-    
-    void setParent(PCB *parent);  // Set the parent PCB.
-    PCB* getParent() const;       // Get the parent PCB.
+    int getID() const;
+    void setID(int id);
 
-    void setExitStatus(int status);  // Set exit status.
-    int getExitStatus() const;       // Get exit status.
-    
-    // Condition variable for join (if needed later for waiting)
+    void setParent(PCB *parent);
+    PCB* getParent() const;
+
+    void setExitStatus(int status);
+    int getExitStatus() const;
+
+    Thread* getThread() const;  // Getter for processThread
+
+    // Condition variable for join (pointer only)
     Condition *joinCond;
 
 private:
@@ -31,3 +33,4 @@ private:
 };
 
 #endif // PCB_H
+
