@@ -1,5 +1,10 @@
 #include "memory_manager.h"
 #include "system.h"
+#include "process_manager.h"
+
+#define MAX_PROCESSES 128  
+ProcessManager* processManager = new ProcessManager(MAX_PROCESSES);
+ 
 
 MemoryManager::MemoryManager(int numTotalPages) {
     // Create a bitmap with one bit per physical page.
@@ -28,5 +33,6 @@ void MemoryManager::clearPage(int pageId) {
     bitmap->Clear(pageId);
     lock->Release();
 }
+
 
 
