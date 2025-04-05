@@ -79,17 +79,14 @@ ExceptionHandler(ExceptionType which)
             int status = machine->ReadRegister(4);
             DEBUG('a', "System Call: %d invoked Exit\n", currentThread->GetSpaceId());
             DEBUG('a', "Process %d exits with %d\n", currentThread->GetSpaceId(), status);
-            // Call your kernel-level Exit() implementation here.
             Exit(status);
             break;
         }
 
         case SC_Exec: {
-            // In a complete implementation, copy the filename from user space.
             char *filename = NULL; // Replace with code to copy from user space.
             DEBUG('a', "System Call: %d invoked Exec\n", currentThread->GetSpaceId());
-            DEBUG('a', "Exec Program: %d loading %s\n", currentThread->GetSpaceId(),
-                  filename ? filename : "unknown");
+            DEBUG('a', "Exec Program: %d loading %s\n", currentThread->GetSpaceId(), filename ? filename : "unknown");
             SpaceId result = Exec(filename);
             machine->WriteRegister(2, result);
             break;
@@ -106,16 +103,8 @@ ExceptionHandler(ExceptionType which)
         case SC_Fork: {
             int funcAddr = machine->ReadRegister(4);
             DEBUG('a', "System Call: %d invoked Fork\n", currentThread->GetSpaceId());
-            // In a complete implementation, Fork() should:
-            //   - Save old process registers.
-            //   - Duplicate the AddrSpace.
-            //   - Create a new thread and PCB.
-            //   - Copy registers and set the PC to funcAddr.
-            //   - Fork the new thread.
             SpaceId childId = Fork((void (*)())funcAddr);
-            // Debug message (numPage is a placeholder for the actual allocated pages)
-            DEBUG('a', "Process %d Fork: start at address 0x%x with %d pages memory\n",
-                  currentThread->GetSpaceId(), funcAddr, /*numPage*/ 0);
+            DEBUG('a', "Process %d Fork: start at address 0x%x with %d pages memory\n", currentThread->GetSpaceId(), funcAddr, 0);
             machine->WriteRegister(2, childId);
             break;
         }
@@ -132,8 +121,7 @@ ExceptionHandler(ExceptionType which)
             if (killResult == 0) {
                 DEBUG('a', "Process %d killed process %d\n", currentThread->GetSpaceId(), killedId);
             } else {
-                DEBUG('a', "Process %d cannot kill process %d: doesn't exist\n",
-                      currentThread->GetSpaceId(), killedId);
+                DEBUG('a', "Process %d cannot kill process %d: doesn't exist\n", currentThread->GetSpaceId(), killedId);
             }
             machine->WriteRegister(2, killResult);
             break;
@@ -148,6 +136,5 @@ ExceptionHandler(ExceptionType which)
         ASSERT(FALSE);
     }
 
-    // Increment the program counter so that the syscall isn't re-executed.
     IncrementPC();
 }
