@@ -1,4 +1,5 @@
 #include "pcb.h"
+#include "synch.h"    // bring in the full Condition definition
 #include "thread.h"
 
 PCB::PCB(Thread *thread)
@@ -37,4 +38,9 @@ void PCB::setExitStatus(int status) {
 
 int PCB::getExitStatus() const {
     return exitStatus;
+}
+
+// Added this getter for processThread
+Thread* PCB::getThread() const {
+    return processThread;
 }
