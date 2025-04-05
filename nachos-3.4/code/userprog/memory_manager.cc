@@ -1,44 +1,54 @@
 #include "memory_manager.h"
-#include "system.h"
+#include "machine.h"
 
-MemoryManager::MemoryManager(int numTotalPages) {
-    // Create a bitmap with one bit per physical page.
-    bitmap = new BitMap(numTotalPages);
-    // Create a lock for synchronizing access to the bitmap.
-    lock = new Lock("MemoryManagerLock");
+MemoryManager::MemoryManager() {
+
+    //mem allocated at the granularity of a page
+    bitmap = new BitMap(NumPhysPages);
 }
+
 
 MemoryManager::~MemoryManager() {
+
     delete bitmap;
-    delete lock;
+
 }
 
+//returns which frame # is available to use 
 int MemoryManager::AllocatePage() {
-    return bitmap->Find();
 
+    //Find returns the index of a clear bit 
+    // & sets the bit
+    //0 is unset & 1 is set
+    //initially, bitmap is all 0
+    //Find returns -1 if no free space
+
+    int page = bitmap->Find();
+    return page;
 }
 
 int MemoryManager::DeallocatePage(int which) {
-    if(bitmap.Test(which)== false) return -1;
-    else{
-        bitmap.Clear(which);
+
+//Check if bit at specified location is set or not
+    //if it is not, then its already clear and we dont
+    //do anything, -1 for failure
+    if(bitmap->Test(which) == false) return -1;
+    else {
+
+        //else, if it was set, clear it
+        //0 for success
+        bitmap->Clear(which);
+
         return 0;
     }
 
 }
 
-int MemoryManager::getPage() {
-    // Acquire the lock to ensure thread safety.
-    lock->Acquire();
-    // Find the first free page (a clear bit in the bitmap).
-    int page = bitmap->Find();  // Returns -1 if no free page is available.
-    lock->Release();
-    return page;
+
+unsigned int MemoryManager::GetFreePageCount() {
+
+    return bitmap->NumClear();
+
 }
 
-void MemoryManager::clearPage(int pageId) {
-    // Acquire the lock before modifying the bitmap.
-    lock->Acquire();
-    bitmap->Clear(pageId);
-    lock->Release();
-}
+
