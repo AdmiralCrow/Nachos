@@ -4,8 +4,7 @@
 #include "list.h"
 #include "processmanager.h"
 
-PCB::PCB(Thread *thread)
-    : processThread(thread), parentPCB(NULL), processID(-1), exitStatus(-9999), nextFd(0)
+PCB::PCB(Thread *thread) : processThread(thread), parentPCB(NULL), processID(-1), exitStatus(-9999), nextFd(0)
 {
     children = new List();
 }
