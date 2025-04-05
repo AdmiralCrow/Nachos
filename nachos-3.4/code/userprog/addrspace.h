@@ -1,4 +1,3 @@
-
 // addrspace.h 
 //	Data structures to keep track of executing user programs 
 //	(address spaces).
@@ -16,14 +15,15 @@
 
 #include "copyright.h"
 #include "filesys.h"
-#include "pcb.h"      // Include the PCB header
 
+class PCB;  // Forward declaration of PCB class
 #define UserStackSize		1024 	// increase this as necessary!
 
 class AddrSpace {
   public:
     AddrSpace(OpenFile *executable);	// Create an address space,
 					// initializing it with the program
+    AddrSpace(const AddrSpace *parentSpace); // NEW Copy constructor
 					// stored in the file "executable"
     ~AddrSpace();			// De-allocate an address space
 
@@ -46,3 +46,4 @@ class AddrSpace {
 };
 
 #endif // ADDRSPACE_H
+
