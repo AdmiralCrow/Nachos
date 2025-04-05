@@ -2,7 +2,7 @@
 #include <map>
 #include "openfile.h"
 #include "list.h"
-#include "process_manager.h"
+#include "processmanager.h"
 
 PCB::PCB(Thread *thread)
     : processThread(thread), parentPCB(NULL), processID(-1), exitStatus(-9999), nextFd(0)
