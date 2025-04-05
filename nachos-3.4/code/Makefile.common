@@ -77,7 +77,11 @@ USERPROG_H = ../userprog/addrspace.h\
 	../machine/console.h\
 	../machine/machine.h\
 	../machine/mipssim.h\
-	../machine/translate.h
+	../machine/translate.h\
+	../userprog/pcb.h\
+	../userprog/process_manager.h\
+	../userprog/memory_manager.h\
+	../userprog/syscall_handlers.h
 
 USERPROG_C = ../userprog/addrspace.cc\
 	../userprog/bitmap.cc\
@@ -86,10 +90,16 @@ USERPROG_C = ../userprog/addrspace.cc\
 	../machine/console.cc\
 	../machine/machine.cc\
 	../machine/mipssim.cc\
-	../machine/translate.cc
+	../machine/translate.cc\
+	../userprog/pcb.cc\
+	../userprog/process_manager.cc\
+	../userprog/memory_manager.cc\
+	../userprog/syscall_handlers.cc
+
 
 USERPROG_O = addrspace.o bitmap.o exception.o progtest.o console.o machine.o \
-	mipssim.o translate.o
+	mipssim.o translate.o pcb.o process_manager.o memory_manager.o syscall_handlers.o
+
 
 VM_H = 
 VM_C = 
@@ -139,4 +149,3 @@ depend: $(CFILES) $(HFILES)
 	echo '# DEPENDENCIES MUST END AT END OF FILE' >> Makefile
 	echo '# IF YOU PUT STUFF HERE IT WILL GO AWAY' >> Makefile
 	echo '# see make depend above' >> Makefile
-
