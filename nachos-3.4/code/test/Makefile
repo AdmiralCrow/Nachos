@@ -66,6 +66,12 @@ exec: exec.o start.o
 	$(LD) $(LDFLAGS) start.o exec.o -o exec.coff
 	../bin/coff2noff exec.coff exec 
 
+exit.o: exit.c
+	$(CC) $(CFLAGS) -c exit.c
+exit: exit.o start.o
+	$(LD) $(LDFLAGS) start.o exit.o -o exit.coff
+	../bin/coff2noff exit.coff exit
+
 halt.o: halt.c
 	$(CC) $(CFLAGS) -c halt.c
 halt: halt.o start.o
