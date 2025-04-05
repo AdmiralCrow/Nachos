@@ -50,10 +50,8 @@
 //----------------------------------------------------------------------
 
 
-
 // Helper function to increment the program counter registers by 4 (one word)
-static void
-IncrementPC() {
+static void IncrementPC() {
     int pc = machine->ReadRegister(PCReg);
     machine->WriteRegister(PrevPCReg, pc);
     pc = machine->ReadRegister(NextPCReg);
@@ -61,93 +59,117 @@ IncrementPC() {
     machine->WriteRegister(NextPCReg, pc + 4);
 }
 
+extern int doFork(int);
+extern int doExec(char*);
+extern void doExit(int);
+extern int doJoin(int);
+extern int doKill(int);
+extern void doYield();
+extern void doCreate(char*);
+extern int doOpen(char*);
+extern void doClose(OpenFileId);
+extern int doRead(int, int, OpenFileId);
+extern int doWrite(int, int, OpenFileId);
+extern char* readString(int); // read string from virtual memory
 
-void
-ExceptionHandler(ExceptionType which)
-{
+void ExceptionHandler(ExceptionType which) {
     int type = machine->ReadRegister(2);  // system call code
 
     if (which == SyscallException) {
         switch(type) {
         case SC_Halt:
-            DEBUG('a', "System Call: %d invoked Halt\n", currentThread->GetSpaceId());
             DEBUG('a', "Shutdown, initiated by user program.\n");
             interrupt->Halt();
             break;
 
-        case SC_Exit: {
-            int status = machine->ReadRegister(4);
-            DEBUG('a', "System Call: %d invoked Exit\n", currentThread->GetSpaceId());
-            DEBUG('a', "Process %d exits with %d\n", currentThread->GetSpaceId(), status);
-            // Call your kernel-level Exit() implementation here.
-            Exit(status);
+        case SC_Exit:
+            doExit(machine->ReadRegister(4));
+            break;
+
+        case SC_Fork: {
+            int funcAddr = machine->ReadRegister(4);
+            int ret = doFork(funcAddr);
+            machine->WriteRegister(2, ret);
             break;
         }
 
         case SC_Exec: {
-            // In a complete implementation, copy the filename from user space.
-            char *filename = NULL; // Replace with code to copy from user space.
-            DEBUG('a', "System Call: %d invoked Exec\n", currentThread->GetSpaceId());
-            DEBUG('a', "Exec Program: %d loading %s\n", currentThread->GetSpaceId(),
-                  filename ? filename : "unknown");
-            SpaceId result = Exec(filename);
-            machine->WriteRegister(2, result);
+            int virtAddr = machine->ReadRegister(4);
+            char* filename = readString(virtAddr);
+            int ret = doExec(filename);
+            machine->WriteRegister(2, ret);
+            delete[] filename;
             break;
         }
 
         case SC_Join: {
             int childId = machine->ReadRegister(4);
-            DEBUG('a', "System Call: %d invoked Join\n", currentThread->GetSpaceId());
-            int joinResult = Join(childId);
-            machine->WriteRegister(2, joinResult);
+            int ret = doJoin(childId);
+            machine->WriteRegister(2, ret);
             break;
         }
 
-        case SC_Fork: {
-            int funcAddr = machine->ReadRegister(4);
-            DEBUG('a', "System Call: %d invoked Fork\n", currentThread->GetSpaceId());
-            // In a complete implementation, Fork() should:
-            //   - Save old process registers.
-            //   - Duplicate the AddrSpace.
-            //   - Create a new thread and PCB.
-            //   - Copy registers and set the PC to funcAddr.
-            //   - Fork the new thread.
-            SpaceId childId = Fork((void (*)())funcAddr);
-            // Debug message (numPage is a placeholder for the actual allocated pages)
-            DEBUG('a', "Process %d Fork: start at address 0x%x with %d pages memory\n",
-                  currentThread->GetSpaceId(), funcAddr, /*numPage*/ 0);
-            machine->WriteRegister(2, childId);
+        case SC_Kill: {
+            int targetPid = machine->ReadRegister(4);
+            int ret = doKill(targetPid);
+            machine->WriteRegister(2, ret);
             break;
         }
 
         case SC_Yield:
-            DEBUG('a', "System Call: %d invoked Yield\n", currentThread->GetSpaceId());
-            Yield();
+            doYield();
             break;
 
-        case SC_Kill: {
-            int killedId = machine->ReadRegister(4);
-            DEBUG('a', "System Call: %d invoked Kill\n", currentThread->GetSpaceId());
-            int killResult = Kill(killedId);
-            if (killResult == 0) {
-                DEBUG('a', "Process %d killed process %d\n", currentThread->GetSpaceId(), killedId);
-            } else {
-                DEBUG('a', "Process %d cannot kill process %d: doesn't exist\n",
-                      currentThread->GetSpaceId(), killedId);
-            }
-            machine->WriteRegister(2, killResult);
+        case SC_Create: {
+            int virtAddr = machine->ReadRegister(4);
+            char* filename = readString(virtAddr);
+            doCreate(filename);
+            delete[] filename;
+            break;
+        }
+
+        case SC_Open: {
+            int virtAddr = machine->ReadRegister(4);
+            char* filename = readString(virtAddr);
+            int ret = doOpen(filename);
+            machine->WriteRegister(2, ret);
+            delete[] filename;
+            break;
+        }
+
+        case SC_Close: {
+            OpenFileId fid = (OpenFileId)machine->ReadRegister(4);
+            doClose(fid);
+            break;
+        }
+
+        case SC_Read: {
+            int virtAddr = machine->ReadRegister(4);
+            int size = machine->ReadRegister(5);
+            OpenFileId fid = (OpenFileId)machine->ReadRegister(6);
+            int ret = doRead(virtAddr, size, fid);
+            machine->WriteRegister(2, ret);
+            break;
+        }
+
+        case SC_Write: {
+            int virtAddr = machine->ReadRegister(4);
+            int size = machine->ReadRegister(5);
+            OpenFileId fid = (OpenFileId)machine->ReadRegister(6);
+            int ret = doWrite(virtAddr, size, fid);
+            machine->WriteRegister(2, ret);
             break;
         }
 
         default:
             printf("Unexpected system call %d\n", type);
+            ASSERT(FALSE);
             break;
         }
+
+        IncrementPC(); // Always increment PC after handling syscall
     } else {
         printf("Unexpected user mode exception %d %d\n", which, type);
         ASSERT(FALSE);
     }
-
-    // Increment the program counter so that the syscall isn't re-executed.
-    IncrementPC();
 }
