@@ -1,33 +1,44 @@
 #ifndef PCB_H
 #define PCB_H
 
-#include "synch.h"
+#include "list.h"
+#include "pcbmanager.h"
+#include "openfile.h"
+#include <map>
 
-// Forward declaration
 class Thread;
+class PCBManager;
+class Condition;
+class Lock;
+extern PCBManager* pcbManager;
 
 class PCB {
-public:
-    PCB(Thread *thread);  // Create a PCB for a process with the associated thread.
-    ~PCB();
 
-    int getID() const;       // Return the process ID.
-    void setID(int id);      // Set the process ID.
-    
-    void setParent(PCB *parent);  // Set the parent PCB.
-    PCB* getParent() const;       // Get the parent PCB.
+    public:
+        PCB(int id);
+        ~PCB();
+        int pid;
+        PCB* parent;
+        Thread* thread;
+        int exitStatus;
 
-    void setExitStatus(int status);  // Set exit status.
-    int getExitStatus() const;       // Get exit status.
-    
-    // Condition variable for join (if needed later for waiting)
-    Condition *joinCond;
+        void AddChild(PCB* pcb);
+        int RemoveChild(PCB* pcb);
+        bool HasExited();
+        void DeleteExitedChildrenSetParentNull();
+        List* GetChildren();
 
-private:
-    int processID;
-    Thread *processThread;
-    PCB *parentPCB;
-    int exitStatus;
+        //project 3
+        // File descriptor management
+        int AllocateFileDescriptor(OpenFile* file);
+        OpenFile* GetFile(int fileDescriptor);
+        void ReleaseFileDescriptor(int fileDescriptor);
+
+    private:
+        List* children;
+        std::map<int, OpenFile*> fileTable; // Map for file descriptors
+        int nextFd; // Counter for the next file descriptor to allocate
+
 };
 
 #endif // PCB_H
