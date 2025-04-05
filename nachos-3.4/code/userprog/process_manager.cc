@@ -55,3 +55,21 @@ PCB* ProcessManager::getPCB(int pid)
     lock->Release();
     return pcb;
 }
+
+bool ProcessManager::isChild(int pid) {
+    return pidMap->Test(pid) && pcbTable[pid]->getParent() == currentThread->space->getPCB();
+}
+
+int ProcessManager::Join(Thread *parent, int pid) {
+    PCB *childPCB = pcbTable[pid];
+    childPCB->joinCond->Wait(lock);
+    return childPCB->getExitStatus();
+}
+
+bool ProcessManager::Kill(int pid) {
+    if (!pidMap->Test(pid)) return false;
+    delete pcbTable[pid];   // or handle more gracefully
+    pidMap->Clear(pid);
+    return true;
+}
+
