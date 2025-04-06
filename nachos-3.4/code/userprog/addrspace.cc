@@ -141,7 +141,7 @@ void AddrSpace::InitRegisters()
     for (int i = 0; i < NumPhysPages; i++)
         machine->WriteRegister(i, 0);
 
-    machine->WriteRegister(PCReg, 0;)	
+    machine->WriteRegister(PCReg, 0;);	
     machine->WriteRegister(NextPCReg, 4);
     machine->WriteRegister(StackReg, numPages * PageSize - 16);
     DEBUG('a', "Initializing stack register to %d\n", numPages * PageSize - 16);
