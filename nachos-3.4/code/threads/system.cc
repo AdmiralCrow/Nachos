@@ -7,7 +7,8 @@
 
 #include "copyright.h"
 #include "system.h"
-#include "memorymanager.h"
+#include "../userprog/memorymanager.h"
+
 
 
 // This defines *all* of the global data structures used by Nachos.
