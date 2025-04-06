@@ -15,6 +15,8 @@
 #include "interrupt.h"
 #include "stats.h"
 #include "timer.h"
+#include "machine.h"
+
 
 // Include headers for multiprogramming support:
 #include "memory_manager.h"    // Memory Manager header
