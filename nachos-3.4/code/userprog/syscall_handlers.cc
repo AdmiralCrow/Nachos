@@ -27,7 +27,7 @@ void SysFork() {
     SpaceId childId = Fork((void (*)())funcAddr);
     DEBUG('a', "Process %d Fork: start at address 0x%x with %d pages memory\n", pid, funcAddr, 0);
     machine->WriteRegister(2, childId);
-    break;
+    
 }
 
 
