@@ -49,7 +49,7 @@
 #define MAIN
 #include "copyright.h"
 #undef MAIN
-
+#include "system.h"
 #include "utility.h"
 #include "system.h"
 #include "elevator.h"

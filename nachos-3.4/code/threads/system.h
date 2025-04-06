@@ -35,6 +35,16 @@
  #define SC_Fork		9
  #define SC_Yield	10
  #define SC_Kill     11
+
+ // Declare global variables
+ extern Thread *currentThread;     // the thread holding the CPU
+ extern Scheduler *scheduler;      // the ready list
+ extern Interrupt *interrupt;
+ extern Statistics *stats;
+ extern Timer *timer;
+
+ void Initialize(int argc, char **argv);
+ void Cleanup();
  
  #ifndef IN_ASM
  
