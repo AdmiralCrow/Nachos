@@ -8,7 +8,7 @@
 class MemoryManager {
 public:
     // Constructor: initializes the bitmap with the total number of physical pages.
-    MemoryManager(NumPhysPages);
+    MemoryManager(int numTotalPages);
     
     // Destructor: cleans up the allocated bitmap and lock.
     ~MemoryManager();
