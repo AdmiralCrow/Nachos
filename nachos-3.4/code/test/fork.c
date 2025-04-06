@@ -1,38 +1,36 @@
 #include "syscall.h"
 
-int global_cnt=0;
+int global_cnt = 0;
 
-void sum(){
-
-	int i;
-
-	for (i=0;i<100;i++)
-	{
-	    global_cnt++;
-	}
-	Exit(i);
+void ChildFunction() {
+    int i;
+    for (i = 0; i < 100; i++) {
+        global_cnt++;  // Simulated computation
+    }
+    Exit(100);  // Child exits with status 100
 }
 
-int main()
-{
-	int i=0;
-	
-	global_cnt++;
+int main() {
+    global_cnt++;
 
-	Fork(sum);
-	Yield();
+    // First child
+    Fork(ChildFunction);
+    Yield();  // Give child chance to run
 
+    global_cnt++;
 
-	global_cnt++;
-	Fork(sum);
+    // Second child
+    Fork(ChildFunction);
+    Yield();
 
-	Yield();
-	
-	global_cnt++;
-	Fork(sum);
+    global_cnt++;
 
-	Yield();
-	
-	global_cnt++;
-	Exit(global_cnt); 
+    // Third child
+    Fork(ChildFunction);
+    Yield();
+
+    global_cnt++;
+    
+    // Parent exits with final global count as status
+    Exit(global_cnt);
 }

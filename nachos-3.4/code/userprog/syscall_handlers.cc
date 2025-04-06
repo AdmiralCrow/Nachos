@@ -22,7 +22,7 @@ static void ChildProcessStarter(int arg) {
 // INSIDE syscall handler
 void SysFork() {
     int funcAddr = machine->ReadRegister(4); // Read address from r4
-    int pid = currentThread->space->getPCB()->getID();  // ✅ Add this line
+    int pid = currentThread->space->getPCB()->getID();  //
 
     DEBUG('a', "Func address passed to Fork: 0x%x\n", funcAddr);
     DEBUG('a', "System Call: %d invoked Fork\n", pid);
