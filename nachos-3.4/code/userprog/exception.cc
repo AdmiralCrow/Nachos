@@ -1,10 +1,4 @@
-// exception.cc  
-//	Entry point into the Nachos kernel from user programs.
-//	Handles syscalls and exceptions.
-//  System call codes are read from register r2.
-//  The result of the system call is placed in register r2.
-//  PC registers must be incremented before returning to avoid infinite loops.
-
+// exception.cc
 #include "copyright.h"
 #include "system.h"
 #include "syscall.h"
@@ -36,13 +30,11 @@ static void IncrementPC() {
 
 void ExceptionHandler(ExceptionType which) {
     int type = machine->ReadRegister(2);  // system call code
-    int pid = currentThread->space->getPCB()->getID();
 
     if (which == SyscallException) {
         switch (type) {
             case SC_Halt:
-                DEBUG('a', "System Call: %d invoked Halt\n", pid);
-                DEBUG('a', "Shutdown, initiated by user program.\n");
+                DEBUG('a', "System Call: Halt invoked.\n");
                 interrupt->Halt();
                 break;
 
@@ -58,15 +50,9 @@ void ExceptionHandler(ExceptionType which) {
                 SysJoin();
                 break;
 
-            case SC_Fork: {
-                int funcAddr = machine->ReadRegister(4);
-                DEBUG('a', "Func address passed to Fork: 0x%x\n", funcAddr);
-                DEBUG('a', "System Call: %d invoked Fork\n", pid);
-                SpaceId childId = Fork((void (*)())funcAddr);
-                DEBUG('a', "Process %d Fork: start at address 0x%x with %d pages memory\n", pid, funcAddr, 0);
-                machine->WriteRegister(2, childId);
+            case SC_Fork:
+                SysFork();
                 break;
-            }
 
             case SC_Yield:
                 SysYield();
@@ -74,6 +60,26 @@ void ExceptionHandler(ExceptionType which) {
 
             case SC_Kill:
                 SysKill();
+                break;
+
+            case SC_Create:
+                SysCreate();
+                break;
+
+            case SC_Open:
+                SysOpen();
+                break;
+
+            case SC_Read:
+                SysRead();
+                break;
+
+            case SC_Write:
+                SysWrite();
+                break;
+
+            case SC_Close:
+                SysClose();
                 break;
 
             default:
