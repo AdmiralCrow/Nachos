@@ -21,6 +21,9 @@ Scheduler *scheduler;			// the ready list
 Interrupt *interrupt;			// interrupt status
 Statistics *stats;			// performance metrics
 Timer *timer;				// the hardware timer device,
+MemoryManager *mm;
+Lock *mmLock;
+
 // for invoking context switches
 
 #ifdef FILESYS_NEEDED
@@ -85,6 +88,9 @@ Initialize(int argc, char **argv)
     int argCount;
     const char* debugArgs = "";
     bool randomYield = FALSE;
+    mm = new MemoryManager();
+    mmLock = new Lock("mmLock");
+
 
 #ifdef USER_PROGRAM
     bool debugUserProg = FALSE;	// single step user program

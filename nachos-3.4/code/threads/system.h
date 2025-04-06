@@ -32,6 +32,9 @@ extern Scheduler *scheduler;           // The ready list
 extern Interrupt *interrupt;           // Interrupt status
 extern Statistics *stats;              // Performance metrics
 extern Timer *timer;                   // The hardware timer device
+extern MemoryManager *mm;
+extern Lock *mmLock;
+
 
 #ifdef USER_PROGRAM
 #include "machine.h"
