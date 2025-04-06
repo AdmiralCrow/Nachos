@@ -8,8 +8,7 @@
 #include "system.h"
 #include "addrspace.h"
 #include "noff.h"
-#include "pcb.h"  // So the compiler knows what PCB actually is
-
+//#include "pcb.h" 
 #ifdef HOST_SPARC
 #include <strings.h>
 #endif
