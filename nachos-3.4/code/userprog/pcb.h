@@ -1,10 +1,7 @@
 #ifndef PCB_H
 #define PCB_H
 
-#include "thread.h"
-#include "synch.h"
-#include "openfile.h"   // Needed for OpenFile*
-#include <map>          // For std::map
+#include "thread.h"   // for Thread*
 
 class Condition;
 class Thread;
@@ -23,12 +20,7 @@ public:
     void setExitStatus(int status);
     int getExitStatus() const;
 
-    Thread* getThread() const;
-
-    // File descriptor management
-    int AllocateFileDescriptor(OpenFile* file);
-    OpenFile* GetFile(int fileDescriptor);
-    void ReleaseFileDescriptor(int fileDescriptor);
+    Thread* getThread() const;  // Getter for processThread
 
     // Condition variable for join (pointer only)
     Condition *joinCond;
@@ -38,10 +30,6 @@ private:
     Thread *processThread;
     PCB *parentPCB;
     int exitStatus;
-
-    // ✅ Add these:
-    int nextFd;
-    std::map<int, OpenFile*> fileTable;
 };
 
 #endif // PCB_H
