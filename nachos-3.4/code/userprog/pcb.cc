@@ -1,20 +1,12 @@
 #include "pcb.h"
 #include <string.h>
 
-//May want to bring in parent and thread as params to constructor?
-PCB::PCB(int id) : pid(id), nextFd(0) {
+PCB::PCB(int id) {
 
-    //assign pid to process
-    //must ensure these id's are unique
     pid = id;
-
-    //Initialize parent & children
     parent = NULL;
     children = new List();
-    
-    //Initialize thread
     thread = NULL;
-
     exitStatus = -9999;
 
 }
@@ -24,7 +16,7 @@ PCB::PCB(int id) : pid(id), nextFd(0) {
 PCB::~PCB() {
 
     delete children;
-       for (std::map<int, OpenFile*>::iterator it = fileTable.begin(); it != fileTable.end(); ++it) {
+        for (std::map<int, OpenFile*>::iterator it = fileTable.begin(); it != fileTable.end(); ++it) {
     delete it->second;
 }
 }
@@ -38,7 +30,7 @@ void PCB::AddChild(PCB* pcb) {
 
 }
 
-//returns int because RemoveItem gives back 0 for success & -1 for failure
+
 int PCB::RemoveChild(PCB* pcb){
 
     return children->RemoveItem(pcb);
@@ -61,15 +53,9 @@ void decspn(int arg) {
 void PCB::DeleteExitedChildrenSetParentNull() {
     children->Mapcar(decspn);
 }
-
 List* PCB::GetChildren() {
     return children;
 }
-
-
-
-
-// File descriptor management methods
 
 int PCB::AllocateFileDescriptor(OpenFile* file) {
     int fd = nextFd++;
