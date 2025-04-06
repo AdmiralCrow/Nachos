@@ -8,7 +8,7 @@
 #include "system.h"
 #include "addrspace.h"
 #include "noff.h"
-//#include "pcb.h" 
+#include "pcb.h" 
 #ifdef HOST_SPARC
 #include <strings.h>
 #endif
