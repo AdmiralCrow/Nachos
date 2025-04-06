@@ -1,6 +1,3 @@
-
-
-
 // system.cc 
 //	Nachos initialization and cleanup routines.
 //
@@ -12,7 +9,6 @@
 #include "system.h"
 #include "../userprog/memory_manager.h"  // Include the Memory Manager header
 
-
 // This defines *all* of the global data structures used by Nachos.
 // These are all initialized and de-allocated by this file.
 
@@ -22,9 +18,6 @@ Scheduler *scheduler;			// the ready list
 Interrupt *interrupt;			// interrupt status
 Statistics *stats;			// performance metrics
 Timer *timer;				// the hardware timer device,
-MemoryManager *mm;
-Lock *mmLock;
-
 // for invoking context switches
 
 #ifdef FILESYS_NEEDED
@@ -89,9 +82,6 @@ Initialize(int argc, char **argv)
     int argCount;
     const char* debugArgs = "";
     bool randomYield = FALSE;
-    mm = new MemoryManager(NumPhysPages);
-    mmLock = new Lock("mmLock");
-
 
 #ifdef USER_PROGRAM
     bool debugUserProg = FALSE;	// single step user program

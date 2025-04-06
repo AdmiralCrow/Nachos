@@ -26,4 +26,3 @@ private:
 };
 
 #endif // MEMORY_MANAGER_H
-

@@ -71,4 +71,3 @@ fork.o: fork.c
 fork: fork.o start.o
 	$(LD) $(LDFLAGS) start.o fork.o -o fork.coff
 	../bin/coff2noff fork.coff fork
-

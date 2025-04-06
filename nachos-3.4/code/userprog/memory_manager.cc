@@ -33,6 +33,3 @@ void MemoryManager::clearPage(int pageId) {
     bitmap->Clear(pageId);
     lock->Release();
 }
-
-
-

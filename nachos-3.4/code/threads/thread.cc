@@ -20,8 +20,6 @@
 #include "synch.h"
 #include "system.h"
 
-
-
 #define STACK_FENCEPOST 0xdeadbeef	// this is put at the top of the
 					// execution stack, for detecting 
 					// stack overflows
@@ -251,8 +249,6 @@ void ThreadPrint(int arg){ Thread *t = (Thread *)arg; t->Print(); }
 //	"arg" is the parameter to be passed to the procedure
 //----------------------------------------------------------------------
 
-#ifdef USER_PROGRAM
-#include "machine.h"
 void
 Thread::StackAllocate (VoidFunctionPtr func, int arg)
 {
@@ -286,10 +282,10 @@ Thread::StackAllocate (VoidFunctionPtr func, int arg)
     machineState[InitialArgState] = arg;
     machineState[WhenDonePCState] = (int) ThreadFinish;
 }
-#endif
 
 #ifdef USER_PROGRAM
 #include "machine.h"
+
 //----------------------------------------------------------------------
 // Thread::SaveUserState
 //	Save the CPU state of a user program on a context switch.
@@ -320,11 +316,5 @@ Thread::RestoreUserState()
 {
     for (int i = 0; i < NumTotalRegs; i++)
 	machine->WriteRegister(i, userRegisters[i]);
-}
-#endif
-
-#ifdef USER_PROGRAM
-int Thread::GetSpaceId() {
-    return (pcb != NULL) ? pcb->getID() : -1;
 }
 #endif

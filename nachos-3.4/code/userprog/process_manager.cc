@@ -72,4 +72,3 @@ bool ProcessManager::Kill(int pid) {
     pidMap->Clear(pid);
     return true;
 }
-

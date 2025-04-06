@@ -29,7 +29,10 @@ SpaceId Fork(void (*func)()) {
     DEBUG('a', "Process %d Fork: start at address 0x%x with %d pages memory\n", parentPid, (int)func, 0);
 
     AddrSpace *childSpace = new AddrSpace(currentThread->space);
-    if (!childSpace) return -1;
+    if (!childSpace) {
+        DEBUG('a', "Failed to create address space for child process\n"); //New debug statement
+        return -1;
+    }
 
     Thread *childThread = new Thread("child");
     childThread->space = childSpace;
@@ -45,9 +48,10 @@ SpaceId Fork(void (*func)()) {
 
     childPCB->setID(pid);
     childPCB->setParent(currentThread->space->getPCB());
-
+    DEBUG('a', "Child process created with PID %d\n", pid);  //New debug statement
     // Cast PCB* to int for Fork
     childThread->Fork(ChildProcessStarter, (int)childPCB);
+    DEBUG('a', "Forking child process %d with thread %s\n", pid, childThread->getName()); //New debug statement
     return pid;
 }
 

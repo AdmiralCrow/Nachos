@@ -15,8 +15,6 @@
 #include "interrupt.h"
 #include "stats.h"
 #include "timer.h"
-#include "machine.h"
-
 
 // Include headers for multiprogramming support:
 #include "memory_manager.h"    // Memory Manager header
@@ -32,9 +30,6 @@ extern Scheduler *scheduler;           // The ready list
 extern Interrupt *interrupt;           // Interrupt status
 extern Statistics *stats;              // Performance metrics
 extern Timer *timer;                   // The hardware timer device
-extern MemoryManager *mm;
-extern Lock *mmLock;
-
 
 #ifdef USER_PROGRAM
 #include "machine.h"
@@ -66,5 +61,3 @@ extern MemoryManager *memoryManager;
 extern ProcessManager *processManager;
 
 #endif // SYSTEM_H
-
-

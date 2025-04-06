@@ -60,6 +60,7 @@ void ExceptionHandler(ExceptionType which) {
 
             case SC_Fork: {
                 int funcAddr = machine->ReadRegister(4);
+                DEBUG('a', "Func address passed to Fork: 0x%x\n", funcAddr);
                 DEBUG('a', "System Call: %d invoked Fork\n", pid);
                 SpaceId childId = Fork((void (*)())funcAddr);
                 DEBUG('a', "Process %d Fork: start at address 0x%x with %d pages memory\n", pid, funcAddr, 0);
@@ -87,4 +88,3 @@ void ExceptionHandler(ExceptionType which) {
     // Advance PC so syscall instruction isn't repeated.
     IncrementPC();
 }
-

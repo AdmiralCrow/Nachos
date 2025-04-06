@@ -1,4 +1,3 @@
-
 # NOTE: this is a GNU Makefile.  You must use "gmake" rather than "make".
 #
 # Makefile for the multiprogramming assignment

@@ -40,6 +40,10 @@
 #include "copyright.h"
 #include "utility.h"
 
+// Forward declaration for AddrSpace.
+// (This tells the compiler that a class named AddrSpace exists.)
+class AddrSpace;
+
 #ifdef USER_PROGRAM
 #include "machine.h"
 #include "addrspace.h"
@@ -127,11 +131,6 @@ class Thread {
     void RestoreUserState();		// restore user-level register state
 
     AddrSpace *space;			// User code this thread is running.
-    class PCB;  // forward declaration
-    PCB *pcb;   // add a pointer to the thread's PCB
-
-    void SetPCB(PCB *p) { pcb = p; }
-    int GetSpaceId();   // helper to access process ID
 #endif
 };
 

@@ -63,4 +63,3 @@ class BitMap {
 };
 
 #endif // BITMAP_H
-
