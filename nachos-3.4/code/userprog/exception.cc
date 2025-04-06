@@ -54,6 +54,7 @@ void doExit(int status) {
 
     // Manage PCB memory As a parent process
     PCB* pcb = currentThread->space->pcb;
+    //save currentthread pid for later 
     int pid = pcb->pid;
 
     printf("System Call: [%d] invoked [Exit]\n", pid);
@@ -62,8 +63,7 @@ void doExit(int status) {
     currentThread->space->pcb->exitStatus = status;
     //exit status
     pcb->exitStatus = status;
-    //save currentthread pid for later 
-    int pid = pcb->pid;
+
 
     // Delete exited children and set parent null for non-exited ones
     pcb->DeleteExitedChildrenSetParentNull();
