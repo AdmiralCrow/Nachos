@@ -63,7 +63,7 @@ void doExit(int status) {
     // Manage PCB memory As a parent process
     PCB* pcb = currentThread->space->pcb;
     //exit status
-    pcb->exitStatus = status
+    pcb->exitStatus = status;
     //save currentthread pid for later 
     int pid = pcb->pid;
 
@@ -135,7 +135,7 @@ int doFork(int functionAddr) {
 
     // 3. Create a new address space for child by copying parent address space
     // Parent: currentThread->space
-    AdderSpace* childAddrSpace: new AddrSpace(currentThread->space);
+    AddrSpace* childAddrSpace = new AddrSpace(currentThread->space);
 
     if(childAddrSpace->valid==false)
     {
@@ -241,7 +241,8 @@ int doJoin(int pid)
 
     // 1. Check if this is a valid pid and return -1 if not
     PCB* joinPCB = pcbManager->GetPCB(pid);
-    if (pcb == NULL) return -1;
+    if (joinPCB == NULL) return -1;
+
 
     // 2. Check if pid is a child of current process
     PCB* pcb = currentThread->space->pcb;
@@ -268,9 +269,9 @@ int doJoin(int pid)
 int doKill (int pid) {
 
     // 1. Check if the pid is valid and if not, return -1
-    PCB* joinPCB = pcbManager->GetPCB(pid);
-    if (pcb == NULL) {
-        printf("Process [%d] cannot kill process[%d]",currentThread->space->pcb->pid,pid);
+    PCB* targetPCB = pcbManager->GetPCB(pid);
+    if (targetPCB == NULL) {
+        printf("Process [%d] cannot kill process[%d]", currentThread->space->pcb->pid, pid);
         return -1;
     }
 
