@@ -4,7 +4,8 @@
 #include "list.h"
 #include "pcbmanager.h"
 #include "openfile.h"
-#include <map>
+
+#define MAX_FILES 20
 
 class Thread;
 class PCBManager;
@@ -13,32 +14,28 @@ class Lock;
 extern PCBManager* pcbManager;
 
 class PCB {
+public:
+    PCB(int id);
+    ~PCB();
+    int pid;
+    PCB* parent;
+    Thread* thread;
+    int exitStatus;
 
-    public:
-        PCB(int id);
-        ~PCB();
-        int pid;
-        PCB* parent;
-        Thread* thread;
-        int exitStatus;
+    void AddChild(PCB* pcb);
+    int RemoveChild(PCB* pcb);
+    bool HasExited();
+    void DeleteExitedChildrenSetParentNull();
+    List* GetChildren();
 
-        void AddChild(PCB* pcb);
-        int RemoveChild(PCB* pcb);
-        bool HasExited();
-        void DeleteExitedChildrenSetParentNull();
-        List* GetChildren();
+    int AllocateFileDescriptor(OpenFile* file);
+    OpenFile* GetFile(int fileDescriptor);
+    void ReleaseFileDescriptor(int fileDescriptor);
 
-        //project 3
-        // File descriptor management
-        int AllocateFileDescriptor(OpenFile* file);
-        OpenFile* GetFile(int fileDescriptor);
-        void ReleaseFileDescriptor(int fileDescriptor);
-
-    private:
-        List* children;
-        std::map<int, OpenFile*> fileTable; // Map for file descriptors
-        int nextFd; // Counter for the next file descriptor to allocate
-
+private:
+    List* children;
+    OpenFile* fileTable[MAX_FILES];
+    int nextFd;
 };
 
 #endif // PCB_H
