@@ -4,7 +4,7 @@
 
 #define MAX_PROCESSES 128  
 ProcessManager* processManager = new ProcessManager(MAX_PROCESSES);
- 
+
 
 MemoryManager::MemoryManager(int numTotalPages) {
     // Create a bitmap with one bit per physical page.

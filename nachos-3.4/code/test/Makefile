@@ -12,18 +12,11 @@
 
 # if you are cross-compiling, you need to point to the right executables
 # and change the flags to ld and the build procedure for as
-
 GCCDIR = ../../../gnu-decstation-ultrix/decstation-ultrix/2.95.3/
 
 LDFLAGS = -T script -N
 ASFLAGS = -mips2
 CPPFLAGS = $(INCDIR)
-
-# if you aren't cross-compiling:
-# GCCDIR =
-# LDFLAGS = -N -T 0
-# ASFLAGS =
-# CPPFLAGS = -P $(INCDIR)
 
 PATH = $(GCCDIR):/lib:/usr/bin:/bin
 
@@ -32,7 +25,7 @@ AS = $(GCCDIR)as
 LD = $(GCCDIR)ld
 
 CPP = gcc -m32 -E
-INCDIR =-I../userprog -I../threads
+INCDIR = -I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR)
 
 all: halt shell matmult sort fork
@@ -68,6 +61,7 @@ matmult: matmult.o start.o
 
 fork.o: fork.c
 	$(CC) $(CFLAGS) -c fork.c
-fork: fork.o start.o
+
+fork: fork.o start.o 
 	$(LD) $(LDFLAGS) start.o fork.o -o fork.coff
 	../bin/coff2noff fork.coff fork

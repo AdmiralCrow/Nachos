@@ -11,18 +11,11 @@
 char* User2Kernel(int addr);
 
 // Function declarations for kernel-level syscall handlers
-SpaceId Fork(void (*func)());
-
+SpaceId SysFork(void (*func)());
 void SysExec();
 void SysExit();
 void SysYield();
 void SysJoin();
 void SysKill();
-void SysCreate();
-void SysOpen();
-void SysRead();
-void SysWrite();
-void SysClose();
-void SysFork();
 
 #endif // SYSCALL_HANDLERS_H

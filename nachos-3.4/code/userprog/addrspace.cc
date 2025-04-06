@@ -9,8 +9,6 @@
 #include "addrspace.h"
 #include "noff.h"
 #include "pcb.h"  // So the compiler knows what PCB actually is
-#include "machine.h"
-
 
 #ifdef HOST_SPARC
 #include <strings.h>
@@ -138,7 +136,7 @@ AddrSpace::~AddrSpace()
 //----------------------------------------------------------------------
 void AddrSpace::InitRegisters()
 {
-    for (int i = 0; i < NumPhysPages; i++)
+    for (int i = 0; i < NumTotalRegs; i++)
         machine->WriteRegister(i, 0);
 
     machine->WriteRegister(PCReg, 0);	

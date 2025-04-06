@@ -128,7 +128,7 @@ void Close(OpenFileId id);
 
 
 //void Fork(void (*func)());
-SpaceId Fork(void (*func)());
+SpaceId SysFork(void (*func)());
 
 
 /* Yield the CPU to another runnable thread, whether in this address space 
