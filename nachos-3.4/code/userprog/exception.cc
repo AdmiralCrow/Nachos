@@ -317,27 +317,6 @@ void doYield() {
 
 
 
-// This implementation (discussed in one of the videos) is broken!
-// Try and figure out why.
-char* readString(int virtualAddr) {
-    int i = 0;
-    char* str = new char[256];
-    unsigned int physicalAddr = currentThread->space->Translate(virtualAddr);
-
-    bcopy(&(machine->mainMemory[physicalAddr]), &str[i], 1);
-    while (str[i] != '\0' && i != 255) {
-        virtualAddr++;
-        i++;
-        physicalAddr = currentThread->space->Translate(virtualAddr);
-        bcopy(&(machine->mainMemory[physicalAddr]), &str[i], 1);
-    }
-    if (i == 255 && str[i] != '\0') {
-        str[i] = '\0';
-    }
-
-    return str;
-}
-
 
 // This implementation is correct!
 // perform MMU translation to access physical memory
