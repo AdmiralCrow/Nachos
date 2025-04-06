@@ -12,12 +12,13 @@
 // These are all initialized and de-allocated by this file.
 
 Thread *currentThread;			// the thread we are running now
-Thread *threadToBeDestroyed;  		// the thread that just finished
+Thread *threadToBeDestroyed = NULL;  		// the thread that just finished
 Scheduler *scheduler;			// the ready list
 Interrupt *interrupt;			// interrupt status
 Statistics *stats;			// performance metrics
 Timer *timer;				// the hardware timer device,
 					// for invoking context switches
+
 
 #ifdef FILESYS_NEEDED
 FileSystem  *fileSystem;
