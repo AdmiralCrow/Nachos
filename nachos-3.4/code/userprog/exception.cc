@@ -379,10 +379,9 @@ ExceptionHandler(ExceptionType which)
     int type = machine->ReadRegister(2);
 
     if ((which == SyscallException) && (type == SC_Halt)) {
-	DEBUG('a', "Shutdown, initiated by user program.\n");
-   	interrupt->Halt();
-    } else  if ((which == SyscallException) && (type == SC_Exit)) {
-        // Implement Exit system call
+        DEBUG('a', "Shutdown, initiated by user program.\n");
+        interrupt->Halt();
+    } else if ((which == SyscallException) && (type == SC_Exit)) {
         doExit(machine->ReadRegister(4));
     } else if ((which == SyscallException) && (type == SC_Fork)) {
         int ret = doFork(machine->ReadRegister(4));
@@ -405,13 +404,19 @@ ExceptionHandler(ExceptionType which)
     } else if ((which == SyscallException) && (type == SC_Yield)) {
         doYield();
         incrementPC();
-    } else if((which == SyscallException) && (type == SC_Create)) {
+    } else if ((which == SyscallException) && (type == SC_Create)) {
         int virtAddr = machine->ReadRegister(4);
         char* fileName = readString(virtAddr);
         doCreate(fileName);
         incrementPC();
+    } else if (which == PageFaultException) {
+        int badAddr = machine->ReadRegister(BadVAddrReg);
+        printf("PageFaultException: Bad address 0x%x\n", badAddr);
+        // If demand paging not implemented, this halts execution.
+        ASSERT(FALSE);
     } else {
-	printf("Unexpected user mode exception %d %d\n", which, type);
-	ASSERT(FALSE);
+        printf("Unexpected user mode exception %d %d\n", which, type);
+        ASSERT(FALSE);
     }
 }
+
