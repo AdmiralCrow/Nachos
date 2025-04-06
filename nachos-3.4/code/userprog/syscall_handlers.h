@@ -23,5 +23,6 @@ void SysOpen();
 void SysRead();
 void SysWrite();
 void SysClose();
+void SysFork();
 
 #endif // SYSCALL_HANDLERS_H
