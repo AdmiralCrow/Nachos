@@ -28,7 +28,21 @@ void PCB::AddChild(PCB* pcb) {
 }
 
 int PCB::RemoveChild(PCB* pcb) {
-    return children->RemoveItem(pcb);
+    bool removed = false;
+    List* newList = new List();
+    void* child;
+    while (!children->IsEmpty()) {
+    child = children->Remove();
+    if (child == pcb && !removed) {
+        removed = true; // skip adding this one back
+    } else {
+        newList->Append(child);
+    }
+    }
+    delete children;
+    children = newList;
+    return removed ? 1 : 0;
+
 }
 
 bool PCB::HasExited() {
