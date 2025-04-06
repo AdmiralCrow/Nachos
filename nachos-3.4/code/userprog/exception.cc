@@ -52,7 +52,6 @@
 
 void doExit(int status) {
 
-    int pid = 99;
 
     printf("System Call: [%d] invoked [Exit]\n", pid);
     printf ("Process [%d] exits with [%d]\n", pid, status);
@@ -78,7 +77,7 @@ void doExit(int status) {
     // Delete address space only after use is completed
     delete currentThread->space;
 
-    printf("process [%d] exits with [%]", pid, status);
+    printf("process [%d] exits with [%d]\n", pid, status);
     // Finish current thread only after all the cleanup is done
     // because currentThread marks itself to be destroyed (by a different thread)
     // and then puts itself to sleep -- thus anything after this statement will not be executed!
@@ -267,14 +266,15 @@ int doJoin(int pid)
 
 
 int doKill (int pid) {
-
+    
+    
     // 1. Check if the pid is valid and if not, return -1
     PCB* targetPCB = pcbManager->GetPCB(pid);
     if (targetPCB == NULL) {
         printf("Process [%d] cannot kill process[%d]", currentThread->space->pcb->pid, pid);
         return -1;
     }
-
+    PCB* pcb = currentThread->space->pcb;
     // 2. IF pid is self, then just exit the process
     if (pcb == currentThread->space->pcb) {
         doExit(0);
@@ -297,14 +297,14 @@ int doKill (int pid) {
     Thread* threadToKill = pcb->thread;
 
     // 4. Set thread to be destroyed.
-    scheduler->RemoveThread(pcb->thread);
+    pcb->thread->Finish(); // Safely finishes the thread
+
     //delete address space && thread
     delete threadToKill->space;
     delete threadToKill;
 
-    // 5. return 0 for success!
+   } // 5. return 0 for success!
     return 0;
-    }
 }
 
 
@@ -321,30 +321,25 @@ void doYield() {
 // This implementation is correct!
 // perform MMU translation to access physical memory
 char* readString(int virtualAddr) {
-    const int maxLen = 256;
-    char* str = new char[maxLen];
+    char* str = new char[256];  // Allocate memory for the string
     int i = 0;
 
-    while (i < maxLen - 1) {
-        unsigned int physicalAddr;
-        if (!currentThread->space->Translate(virtualAddr, &physicalAddr)) {
-            // Translation failed, bail out
-            str[i] = '\0';
-            break;
-        }
+    while (i < 255) {  // Avoid buffer overflows
+        unsigned int physicalAddr = currentThread->space->Translate(virtualAddr);
 
-        bcopy(&(machine->mainMemory[physicalAddr]), &str[i], 1);
+        // Read from main memory using translated physical address
+        str[i] = machine->mainMemory[physicalAddr];
+        
+        if (str[i] == '\0') break;
 
-        if (str[i] == '\0') {
-            break;
-        }
-        virtualAddr++;
         i++;
+        virtualAddr++;
     }
-    str[maxLen - 1] = '\0';
 
+    str[i] = '\0';  // Ensure null-terminated string
     return str;
 }
+
 
 void doCreate(char* fileName)
 {
