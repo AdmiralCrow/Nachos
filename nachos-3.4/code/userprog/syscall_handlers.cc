@@ -21,15 +21,15 @@ static void ChildProcessStarter(int arg) {
 // ------------------------------------------
 // INSIDE syscall handler
 void SysFork() {
-    int funcAddr = machine->ReadRegister(4);
+    int funcAddr = machine->ReadRegister(4); // Read address from r4
+    int pid = currentThread->space->getPCB()->getID();  // ✅ Add this line
+
     DEBUG('a', "Func address passed to Fork: 0x%x\n", funcAddr);
     DEBUG('a', "System Call: %d invoked Fork\n", pid);
-    SpaceId childId = Fork((void (*)())funcAddr);
-    DEBUG('a', "Process %d Fork: start at address 0x%x with %d pages memory\n", pid, funcAddr, 0);
-    machine->WriteRegister(2, childId);
-    
-}
 
+    SpaceId childId = Fork((void (*)())funcAddr);  // Call actual fork logic
+    machine->WriteRegister(2, childId);            // Return child PID in r2
+}
 
 //----------------------------------------------------------------------
 // Fork()
