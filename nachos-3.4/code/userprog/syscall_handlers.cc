@@ -18,6 +18,19 @@ static void ChildProcessStarter(int arg) {
     ASSERT(FALSE); // should not return
 }
 
+// ------------------------------------------
+// INSIDE syscall handler
+void SysFork() {
+    int funcAddr = machine->ReadRegister(4);
+    DEBUG('a', "Func address passed to Fork: 0x%x\n", funcAddr);
+    DEBUG('a', "System Call: %d invoked Fork\n", pid);
+    SpaceId childId = Fork((void (*)())funcAddr);
+    DEBUG('a', "Process %d Fork: start at address 0x%x with %d pages memory\n", pid, funcAddr, 0);
+    machine->WriteRegister(2, childId);
+    break;
+}
+
+
 //----------------------------------------------------------------------
 // Fork()
 //----------------------------------------------------------------------
@@ -54,16 +67,6 @@ SpaceId Fork(void (*func)()) {
     DEBUG('a', "Forking child process %d with thread %s\n", pid, childThread->getName()); //New debug statement
     return pid;
 }
-
-//----------------------------------------------------------------------
-// SysFork()
-//----------------------------------------------------------------------
-void SysFork() {
-    int funcAddr = machine->ReadRegister(4);  // Read from r4
-    SpaceId childId = Fork((void (*)())funcAddr);  // Call core logic
-    machine->WriteRegister(2, childId);  // Write result to r2
-}
-
 
 //----------------------------------------------------------------------
 // SysExec()
@@ -166,99 +169,3 @@ void SysKill() {
         machine->WriteRegister(2, 0);
     }
 }
-//----------------------------------------------------------------------
-// SysCreate()
-//----------------------------------------------------------------------
-void SysCreate() {
-    int filenameAddr = machine->ReadRegister(4);
-    char *filename = User2Kernel(filenameAddr);
-    fileSystem->Create(filename, 0);
-    delete[] filename;
-}
-
-//----------------------------------------------------------------------
-// SysOpen()
-//----------------------------------------------------------------------
-void SysOpen() {
-    int filenameAddr = machine->ReadRegister(4);
-    char *filename = User2Kernel(filenameAddr);
-    OpenFile *file = fileSystem->Open(filename);
-    delete[] filename;
-
-    if (file == NULL) {
-        machine->WriteRegister(2, -1);
-        return;
-    }
-
-    int fd = currentThread->space->getPCB()->AllocateFileDescriptor(file);
-    machine->WriteRegister(2, fd);
-}
-
-//----------------------------------------------------------------------
-// SysRead()
-//----------------------------------------------------------------------
-void SysRead() {
-    int virtAddr = machine->ReadRegister(4);
-    int size = machine->ReadRegister(5);
-    int id = machine->ReadRegister(6);
-
-    OpenFile *file = currentThread->space->getPCB()->GetFile(id);
-    if (!file) {
-        machine->WriteRegister(2, -1);
-        return;
-    }
-
-    char *buffer = new char[size];
-    int bytesRead = file->Read(buffer, size);
-
-    for (int i = 0; i < bytesRead; ++i) {
-        int physAddr = currentThread->space->Translate(virtAddr + i);
-        machine->mainMemory[physAddr] = buffer[i];
-    }
-
-    delete[] buffer;
-    machine->WriteRegister(2, bytesRead);
-}
-
-//----------------------------------------------------------------------
-// SysWrite()
-//----------------------------------------------------------------------
-void SysWrite() {
-    int virtAddr = machine->ReadRegister(4);
-    int size = machine->ReadRegister(5);
-    int id = machine->ReadRegister(6);
-
-    OpenFile *file = currentThread->space->getPCB()->GetFile(id);
-    if (!file) {
-        machine->WriteRegister(2, -1);
-        return;
-    }
-
-    char *buffer = new char[size];
-    for (int i = 0; i < size; ++i) {
-        int physAddr = currentThread->space->Translate(virtAddr + i);
-        buffer[i] = machine->mainMemory[physAddr];
-    }
-
-    int bytesWritten = file->Write(buffer, size);
-    delete[] buffer;
-    machine->WriteRegister(2, bytesWritten);
-}
-//----------------------------------------------------------------------
-// SysClose()
-//----------------------------------------------------------------------
-void SysClose() {
-    int id = machine->ReadRegister(4);
-
-    PCB *pcb = currentThread->space->getPCB();
-    OpenFile *file = pcb->GetFile(id);
-
-    if (file == NULL) {
-        machine->WriteRegister(2, -1);
-        return;
-    }
-
-    pcb->ReleaseFileDescriptor(id);
-    machine->WriteRegister(2, 0);
-}
-
