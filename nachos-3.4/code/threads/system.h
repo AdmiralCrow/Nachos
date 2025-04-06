@@ -11,9 +11,7 @@
  */
 
  #ifndef SYSCALLS_H
- #define SYSCALLS_H
- 
- #define SC_Kill 12  
+ #define SYSCALLS_H 
  
  #include "copyright.h"
  
