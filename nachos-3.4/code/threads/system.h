@@ -14,6 +14,11 @@
  #define SYSCALLS_H 
  
  #include "copyright.h"
+ #include "thread.h"
+ #include "scheduler.h"
+ #include "interrupt.h"
+ #include "stats.h"
+ #include "timer.h"
  
  /* system call codes -- used by the stubs to tell the kernel which system call
   * is being asked for
