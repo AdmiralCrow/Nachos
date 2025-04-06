@@ -9,7 +9,9 @@
 
 DEFINES = -DTHREADS 
 #-DHW1_LOCKS  -DHW1_CONDITIONS -DHW1_SEMAPHORES -DHW1_ELEVATOR
-INCPATH = -I../threads -I../machine
+#INCPATH = -I../threads -I../machine
+INCPATH = -I../threads -I../machine -I../userprog -I../filesys
+
 HFILES = $(THREAD_H)
 CFILES = $(THREAD_C)
 C_OFILES = $(THREAD_O)
@@ -38,6 +40,9 @@ main.o: ../threads/main.cc /usr/include/stdc-predef.h \
  ../threads/system.h ../threads/thread.h ../threads/scheduler.h \
  ../threads/list.h ../machine/interrupt.h ../threads/list.h \
  ../machine/stats.h ../machine/timer.h ../threads/utility.h \
+ ../userprog/memory_manager.h ../userprog/bitmap.h \
+ ../userprog/../filesys/openfile.h ../threads/synch.h \
+ ../userprog/process_manager.h ../userprog/pcb.h ../threads/thread.h \
  ../threads/elevator.h ../threads/synch.h
 list.o: ../threads/list.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h ../threads/list.h ../threads/utility.h \
@@ -74,7 +79,9 @@ scheduler.o: ../threads/scheduler.cc /usr/include/stdc-predef.h \
  /usr/include/bits/types/__locale_t.h /usr/include/strings.h \
  ../threads/thread.h ../threads/system.h ../machine/interrupt.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h \
- ../threads/utility.h
+ ../threads/utility.h ../userprog/memory_manager.h ../userprog/bitmap.h \
+ ../userprog/../filesys/openfile.h ../threads/synch.h \
+ ../userprog/process_manager.h ../userprog/pcb.h ../threads/thread.h
 synch.o: ../threads/synch.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h ../threads/synch.h ../threads/thread.h \
  ../threads/utility.h ../threads/bool.h ../machine/sysdep.h \
@@ -94,7 +101,10 @@ synch.o: ../threads/synch.cc /usr/include/stdc-predef.h \
  /usr/include/bits/types/__locale_t.h /usr/include/strings.h \
  ../threads/list.h ../threads/system.h ../threads/scheduler.h \
  ../machine/interrupt.h ../threads/list.h ../machine/stats.h \
- ../machine/timer.h ../threads/utility.h /usr/include/c++/8/cstdlib \
+ ../machine/timer.h ../threads/utility.h ../userprog/memory_manager.h \
+ ../userprog/bitmap.h ../userprog/../filesys/openfile.h \
+ ../threads/synch.h ../userprog/process_manager.h ../userprog/pcb.h \
+ ../threads/thread.h /usr/include/c++/8/cstdlib \
  /usr/include/c++/8/x86_64-redhat-linux/32/bits/c++config.h \
  /usr/include/c++/8/x86_64-redhat-linux/32/bits/os_defines.h \
  /usr/include/c++/8/x86_64-redhat-linux/32/bits/cpu_defines.h \
@@ -149,7 +159,10 @@ system.o: ../threads/system.cc /usr/include/stdc-predef.h \
  /usr/include/bits/types/__locale_t.h /usr/include/strings.h \
  ../threads/thread.h ../threads/scheduler.h ../threads/list.h \
  ../machine/interrupt.h ../threads/list.h ../machine/stats.h \
- ../machine/timer.h ../threads/utility.h
+ ../machine/timer.h ../threads/utility.h ../userprog/memory_manager.h \
+ ../userprog/bitmap.h ../userprog/../filesys/openfile.h \
+ ../threads/synch.h ../userprog/process_manager.h ../userprog/pcb.h \
+ ../threads/thread.h ../threads/../userprog/memory_manager.h
 thread.o: ../threads/thread.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h ../threads/thread.h ../threads/utility.h \
  ../threads/bool.h ../machine/sysdep.h ../threads/copyright.h \
@@ -169,7 +182,9 @@ thread.o: ../threads/thread.cc /usr/include/stdc-predef.h \
  ../threads/switch.h ../threads/synch.h ../threads/list.h \
  ../threads/system.h ../threads/scheduler.h ../machine/interrupt.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h \
- ../threads/utility.h
+ ../threads/utility.h ../userprog/memory_manager.h ../userprog/bitmap.h \
+ ../userprog/../filesys/openfile.h ../threads/synch.h \
+ ../userprog/process_manager.h ../userprog/pcb.h ../threads/thread.h
 utility.o: ../threads/utility.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h ../threads/utility.h ../threads/bool.h \
  ../machine/sysdep.h ../threads/copyright.h /usr/include/stdio.h \
@@ -205,8 +220,10 @@ threadtest.o: ../threads/threadtest.cc /usr/include/stdc-predef.h \
  /usr/include/bits/types/__locale_t.h /usr/include/strings.h \
  ../threads/thread.h ../threads/scheduler.h ../threads/list.h \
  ../machine/interrupt.h ../threads/list.h ../machine/stats.h \
- ../machine/timer.h ../threads/utility.h ../threads/synch.h \
- /usr/include/c++/8/cstdlib \
+ ../machine/timer.h ../threads/utility.h ../userprog/memory_manager.h \
+ ../userprog/bitmap.h ../userprog/../filesys/openfile.h \
+ ../threads/synch.h ../userprog/process_manager.h ../userprog/pcb.h \
+ ../threads/thread.h ../threads/synch.h /usr/include/c++/8/cstdlib \
  /usr/include/c++/8/x86_64-redhat-linux/32/bits/c++config.h \
  /usr/include/c++/8/x86_64-redhat-linux/32/bits/os_defines.h \
  /usr/include/c++/8/x86_64-redhat-linux/32/bits/cpu_defines.h \
@@ -243,8 +260,10 @@ ElevatorTest.o: ../threads/ElevatorTest.cc /usr/include/stdc-predef.h \
  /usr/include/bits/types/__locale_t.h /usr/include/strings.h \
  ../threads/thread.h ../threads/scheduler.h ../threads/list.h \
  ../machine/interrupt.h ../threads/list.h ../machine/stats.h \
- ../machine/timer.h ../threads/utility.h ../threads/synch.h \
- ../threads/elevator.h
+ ../machine/timer.h ../threads/utility.h ../userprog/memory_manager.h \
+ ../userprog/bitmap.h ../userprog/../filesys/openfile.h \
+ ../threads/synch.h ../userprog/process_manager.h ../userprog/pcb.h \
+ ../threads/thread.h ../threads/synch.h ../threads/elevator.h
 elevator.o: ../threads/elevator.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h ../threads/system.h ../threads/utility.h \
  ../threads/bool.h ../machine/sysdep.h ../threads/copyright.h \
@@ -263,8 +282,11 @@ elevator.o: ../threads/elevator.cc /usr/include/stdc-predef.h \
  /usr/include/bits/types/__locale_t.h /usr/include/strings.h \
  ../threads/thread.h ../threads/scheduler.h ../threads/list.h \
  ../machine/interrupt.h ../threads/list.h ../machine/stats.h \
- ../machine/timer.h ../threads/utility.h ../threads/synch.h \
- ../threads/elevator.h /usr/include/c++/8/cstdio \
+ ../machine/timer.h ../threads/utility.h ../userprog/memory_manager.h \
+ ../userprog/bitmap.h ../userprog/../filesys/openfile.h \
+ ../threads/synch.h ../userprog/process_manager.h ../userprog/pcb.h \
+ ../threads/thread.h ../threads/synch.h ../threads/elevator.h \
+ /usr/include/c++/8/cstdio \
  /usr/include/c++/8/x86_64-redhat-linux/32/bits/c++config.h \
  /usr/include/c++/8/x86_64-redhat-linux/32/bits/os_defines.h \
  /usr/include/c++/8/x86_64-redhat-linux/32/bits/cpu_defines.h \
@@ -303,7 +325,10 @@ interrupt.o: ../machine/interrupt.cc /usr/include/stdc-predef.h \
  /usr/include/bits/types/__locale_t.h /usr/include/strings.h \
  ../threads/system.h ../threads/thread.h ../threads/scheduler.h \
  ../threads/list.h ../machine/interrupt.h ../machine/stats.h \
- ../machine/timer.h ../threads/utility.h
+ ../machine/timer.h ../threads/utility.h ../userprog/memory_manager.h \
+ ../userprog/bitmap.h ../userprog/../filesys/openfile.h \
+ ../threads/synch.h ../userprog/process_manager.h ../userprog/pcb.h \
+ ../threads/thread.h
 sysdep.o: ../machine/sysdep.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h /usr/include/stdio.h \
  /usr/include/bits/libc-header-start.h /usr/include/features.h \
@@ -366,7 +391,10 @@ sysdep.o: ../machine/sysdep.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h ../threads/utility.h ../threads/bool.h \
  ../machine/sysdep.h ../threads/system.h ../threads/thread.h \
  ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
- ../machine/stats.h ../machine/timer.h ../threads/utility.h
+ ../machine/stats.h ../machine/timer.h ../threads/utility.h \
+ ../userprog/memory_manager.h ../userprog/bitmap.h \
+ ../userprog/../filesys/openfile.h ../threads/synch.h \
+ ../userprog/process_manager.h ../userprog/pcb.h ../threads/thread.h
 stats.o: ../machine/stats.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h ../threads/utility.h ../threads/copyright.h \
  ../threads/bool.h ../machine/sysdep.h /usr/include/stdio.h \
@@ -402,7 +430,11 @@ timer.o: ../machine/timer.cc /usr/include/stdc-predef.h \
  /usr/include/bits/types/__locale_t.h /usr/include/strings.h \
  ../threads/system.h ../threads/utility.h ../threads/thread.h \
  ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
- ../threads/list.h ../machine/stats.h ../machine/timer.h
+ ../threads/list.h ../machine/stats.h ../machine/timer.h \
+ ../userprog/memory_manager.h ../userprog/bitmap.h \
+ ../userprog/../filesys/openfile.h ../threads/synch.h \
+ ../userprog/process_manager.h ../userprog/pcb.h ../threads/thread.h
 # DEPENDENCIES MUST END AT END OF FILE
 # IF YOU PUT STUFF HERE IT WILL GO AWAY
 # see make depend above
+
