@@ -7,35 +7,20 @@
 #include "syscall_handlers.h"
 
 // Corrected signature for Thread::Fork
-//static void ChildProcessStarter(int arg) {
-//    PCB *childPCB = (PCB *)arg;
- //   Thread *childThread = childPCB->getThread(); // Use getter
-
-//    currentThread = childThread; // Set current context
-//    childThread->space->InitRegisters();
-//    childThread->space->RestoreState();
-//    machine->Run();
-//    ASSERT(FALSE); // should not return
-//}
 static void ChildProcessStarter(int arg) {
     PCB *childPCB = (PCB *)arg;
-    Thread *childThread = childPCB->getThread();
-    currentThread = childThread;
+    Thread *childThread = childPCB->getThread(); // Use getter
 
+    currentThread = childThread; // Set current context
     printf("🚀 [ChildStarter] Running child PID %d\n", childPCB->getID());
-
     childThread->space->InitRegisters();
     childThread->space->RestoreState();
-
-    int funcAddr = childThread->userStartAddress;
     machine->WriteRegister(PCReg, funcAddr);
     machine->WriteRegister(NextPCReg, funcAddr + 4);
     machine->WriteRegister(PrevPCReg, 0);
-
     machine->Run();
-    ASSERT(FALSE);
+    ASSERT(FALSE); // should not return
 }
-
 
 // ------------------------------------------
 // INSIDE syscall handler
