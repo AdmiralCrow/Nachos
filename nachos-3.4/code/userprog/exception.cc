@@ -52,15 +52,14 @@
 
 void doExit(int status) {
 
+    // Manage PCB memory As a parent process
+    PCB* pcb = currentThread->space->pcb;
+    int pid = pcb->pid;
 
     printf("System Call: [%d] invoked [Exit]\n", pid);
     printf ("Process [%d] exits with [%d]\n", pid, status);
 
-
     currentThread->space->pcb->exitStatus = status;
-
-    // Manage PCB memory As a parent process
-    PCB* pcb = currentThread->space->pcb;
     //exit status
     pcb->exitStatus = status;
     //save currentthread pid for later 
