@@ -20,16 +20,29 @@ static void ChildProcessStarter(int arg) {
 
 // ------------------------------------------
 // INSIDE syscall handler
+//void SysFork() {
+//    int funcAddr = machine->ReadRegister(4); // Read address from r4
+//    int pid = currentThread->space->getPCB()->getID();  //
+
+ //   DEBUG('a', "Func address passed to Fork: 0x%x\n", funcAddr);
+ //   DEBUG('a', "System Call: %d invoked Fork\n", pid);
+
+//    SpaceId childId = Fork((void (*)())funcAddr);  // Call actual fork logic
+//    machine->WriteRegister(2, childId);            // Return child PID in r2
 void SysFork() {
-    int funcAddr = machine->ReadRegister(4); // Read address from r4
-    int pid = currentThread->space->getPCB()->getID();  //
+    int funcAddr = machine->ReadRegister(4);
+    int pid = currentThread->space->getPCB()->getID();
 
     DEBUG('a', "Func address passed to Fork: 0x%x\n", funcAddr);
     DEBUG('a', "System Call: %d invoked Fork\n", pid);
 
-    SpaceId childId = Fork((void (*)())funcAddr);  // Call actual fork logic
-    machine->WriteRegister(2, childId);            // Return child PID in r2
+    printf("🔧 Kernel: Fork() syscall received for PID %d, function addr: 0x%x\n", pid, funcAddr);
+
+    SpaceId childId = Fork(funcAddr);
+    machine->WriteRegister(2, childId);
 }
+//}
+
 
 //----------------------------------------------------------------------
 // Fork()
