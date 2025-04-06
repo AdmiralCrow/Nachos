@@ -81,6 +81,7 @@ void ExceptionHandler(ExceptionType which) {
             case SC_Close:
                 SysClose();
                 break;
+            
 
             default:
                 printf("Unexpected system call %d\n", type);

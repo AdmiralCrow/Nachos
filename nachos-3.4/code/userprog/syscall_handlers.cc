@@ -156,3 +156,99 @@ void SysKill() {
         machine->WriteRegister(2, 0);
     }
 }
+//----------------------------------------------------------------------
+// SysCreate()
+//----------------------------------------------------------------------
+void SysCreate() {
+    int filenameAddr = machine->ReadRegister(4);
+    char *filename = User2Kernel(filenameAddr);
+    fileSystem->Create(filename, 0);
+    delete[] filename;
+}
+
+//----------------------------------------------------------------------
+// SysOpen()
+//----------------------------------------------------------------------
+void SysOpen() {
+    int filenameAddr = machine->ReadRegister(4);
+    char *filename = User2Kernel(filenameAddr);
+    OpenFile *file = fileSystem->Open(filename);
+    delete[] filename;
+
+    if (file == NULL) {
+        machine->WriteRegister(2, -1);
+        return;
+    }
+
+    int fd = currentThread->space->getPCB()->AllocateFileDescriptor(file);
+    machine->WriteRegister(2, fd);
+}
+
+//----------------------------------------------------------------------
+// SysRead()
+//----------------------------------------------------------------------
+void SysRead() {
+    int virtAddr = machine->ReadRegister(4);
+    int size = machine->ReadRegister(5);
+    int id = machine->ReadRegister(6);
+
+    OpenFile *file = currentThread->space->getPCB()->GetFile(id);
+    if (!file) {
+        machine->WriteRegister(2, -1);
+        return;
+    }
+
+    char *buffer = new char[size];
+    int bytesRead = file->Read(buffer, size);
+
+    for (int i = 0; i < bytesRead; ++i) {
+        int physAddr = currentThread->space->Translate(virtAddr + i);
+        machine->mainMemory[physAddr] = buffer[i];
+    }
+
+    delete[] buffer;
+    machine->WriteRegister(2, bytesRead);
+}
+
+//----------------------------------------------------------------------
+// SysWrite()
+//----------------------------------------------------------------------
+void SysWrite() {
+    int virtAddr = machine->ReadRegister(4);
+    int size = machine->ReadRegister(5);
+    int id = machine->ReadRegister(6);
+
+    OpenFile *file = currentThread->space->getPCB()->GetFile(id);
+    if (!file) {
+        machine->WriteRegister(2, -1);
+        return;
+    }
+
+    char *buffer = new char[size];
+    for (int i = 0; i < size; ++i) {
+        int physAddr = currentThread->space->Translate(virtAddr + i);
+        buffer[i] = machine->mainMemory[physAddr];
+    }
+
+    int bytesWritten = file->Write(buffer, size);
+    delete[] buffer;
+    machine->WriteRegister(2, bytesWritten);
+}
+//----------------------------------------------------------------------
+// SysClose()
+//----------------------------------------------------------------------
+void SysClose() {
+    int id = machine->ReadRegister(4);
+
+    PCB *pcb = currentThread->space->getPCB();
+    OpenFile *file = pcb->GetFile(id);
+
+    if (file == NULL) {
+        machine->WriteRegister(2, -1);
+        return;
+    }
+
+    pcb->ReleaseFileDescriptor(id);
+    machine->WriteRegister(2, 0);
+}
+
