@@ -56,6 +56,16 @@ SpaceId Fork(void (*func)()) {
 }
 
 //----------------------------------------------------------------------
+// SysFork()
+//----------------------------------------------------------------------
+void SysFork() {
+    int funcAddr = machine->ReadRegister(4);  // Read from r4
+    SpaceId childId = Fork((void (*)())funcAddr);  // Call core logic
+    machine->WriteRegister(2, childId);  // Write result to r2
+}
+
+
+//----------------------------------------------------------------------
 // SysExec()
 //----------------------------------------------------------------------
 void SysExec() {
