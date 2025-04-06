@@ -1,67 +1,68 @@
 #include "pcbmanager.h"
-#include "system.h"
 
-// Constructor: Initialize bitmap, array of PCBs, and lock
+
 PCBManager::PCBManager(int maxProcesses) {
+
     bitmap = new BitMap(maxProcesses);
     pcbs = new PCB*[maxProcesses];
-    pcbManagerLock = new Lock("pcbManagerLock");
 
-    for (int i = 0; i < maxProcesses; i++) {
+    for(int i = 0; i < maxProcesses; i++) {
         pcbs[i] = NULL;
     }
+
 }
 
-// Destructor: Clean up resources
+
 PCBManager::~PCBManager() {
-    for (int i = 0; i < bitmap->NumBits(); i++) {
-        if (pcbs[i] != NULL) {
-            delete pcbs[i];
-        }
-    }
-    delete[] pcbs;
+
     delete bitmap;
-    delete pcbManagerLock;
+
+    delete pcbs;
+
 }
 
-// Allocate a new PCB and return a pointer to it
-PCB* PCBManager::AllocatePCB(Thread* thread) {
-    pcbManagerLock->Acquire();
 
+PCB* PCBManager::AllocatePCB() {
+
+    // Aquire pcbManagerLock
+    pcbManagerLock->Acquire();
     int pid = bitmap->Find();
-    if (pid == -1) {
-        pcbManagerLock->Release();
-        return NULL;  // No free slots
-    }
 
-    PCB* newPCB = new PCB(thread);
-    newPCB->setID(pid);
-    pcbs[pid] = newPCB;
-
+    // Release pcbManagerLock
     pcbManagerLock->Release();
-    return newPCB;
+
+    ASSERT(pid != -1);
+
+    pcbs[pid] = new PCB(pid);
+
+    return pcbs[pid];
+
 }
 
-// Deallocate a PCB and free its slot
+
 int PCBManager::DeallocatePCB(PCB* pcb) {
-    int pid = pcb->getID();
 
-    pcbManagerLock->Acquire();
-
-    if (pcbs[pid] == NULL) {
-        pcbManagerLock->Release();
-        return -1; // PCB not found
+    // Check is pcb is valid -- check pcbs for pcb->pid
+    if (pcbs[pcb->pid] == NULL){
+     
+        return -1;
     }
+     // Aquire pcbManagerLock
+    pcbManagerLock->Acquire();
+    bitmap->Clear(pcb->pid);
+
+    // Release pcbManagerLock
+    pcbManagerLock->Release();
+    int pid = pcb->pid;
 
     delete pcbs[pid];
-    pcbs[pid] = NULL;
-    bitmap->Clear(pid);
 
-    pcbManagerLock->Release();
+    pcbs[pid] = NULL;
+
     return 0;
+
 }
 
-// Retrieve a PCB by its process ID
 PCB* PCBManager::GetPCB(int pid) {
     return pcbs[pid];
 }

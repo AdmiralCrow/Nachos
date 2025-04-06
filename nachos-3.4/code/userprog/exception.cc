@@ -25,6 +25,7 @@
 #include "system.h"
 #include "syscall.h"
 #include "system.h"
+#include "synch.h"
 
 //----------------------------------------------------------------------
 // ExceptionHandler
