@@ -88,7 +88,7 @@ Initialize(int argc, char **argv)
     int argCount;
     const char* debugArgs = "";
     bool randomYield = FALSE;
-    mm = new MemoryManager();
+    mm = new MemoryManager(NumPhysPages);
     mmLock = new Lock("mmLock");
 
 
