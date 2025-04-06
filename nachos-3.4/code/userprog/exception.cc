@@ -24,7 +24,6 @@
 #include "copyright.h"
 #include "system.h"
 #include "syscall.h"
-#include "system.h"
 #include "synch.h"
 
 //----------------------------------------------------------------------
@@ -79,7 +78,7 @@ void doExit(int status) {
     // Delete address space only after use is completed
     delete currentThread->space;
 
-    printf("process [%d] exits with [%]", pid, status)
+    printf("process [%d] exits with [%]", pid, status);
     // Finish current thread only after all the cleanup is done
     // because currentThread marks itself to be destroyed (by a different thread)
     // and then puts itself to sleep -- thus anything after this statement will not be executed!
@@ -99,10 +98,10 @@ void incrementPC() {
 void childFunction(int pid) {
 
     // 1. Restore the state of registers
-    currentThread->RestoreUserState()
+    currentThread->RestoreUserState();
 
     // 2. Restore the page table for child
-    currentThread->space->RestoreState()
+    currentThread->space->RestoreState();
     //call run
     machine->Run();
 
@@ -146,14 +145,14 @@ int doFork(int functionAddr) {
     }
 
     // 4. Create a new thread for the child and set its addrSpace
-    Thread* childThread = new Thread("childThread")
-    childThread->space = childAddSpace;
+    Thread* childThread = new Thread("childThread");
+    childThread->space = childAddrSpace;
 
 
 
     // 5. Create a PCB for the child and connect it all up
     // pcb: pcbManager->AllocatePCB();
-    pcb->thread = childThread
+    pcb->thread = childThread;
     // set parent for child pcb
     pcb->parent = currentThread->space->pcb; 
     //connect child pcb to child address space
@@ -173,10 +172,10 @@ int doFork(int functionAddr) {
     childThread->SaveUserState();
 
     // 7. Restore register state of parent user-level process
-    currentThread->RestoreUserState()
+    currentThread->RestoreUserState();
 
     // 8. Call thread->fork on Child
-    childThread->Fork(childFunction, pcb->pid)
+    childThread->Fork(childFunction, pcb->pid);
 
     // pcreg = machine->ReadRegister(PCReg)
     // print message for child creation (pid,  pcreg, currentThread->space->GetNumPages())
@@ -282,8 +281,6 @@ int doKill (int pid) {
     }
     else{
 
-    
-
     // 3. Valid kill, pid exists and not self, do cleanup similar to Exit
     // However, change references from currentThread to the target thread
     // pcb->thread is the target thread
@@ -341,14 +338,6 @@ char* readString(int virtualAddr) {
 }
 
 
-
-
-
-
-
-
-
-
 // This implementation is correct!
 // perform MMU translation to access physical memory
 char* readString(int virtualAddr) {
@@ -369,7 +358,6 @@ char* readString(int virtualAddr) {
         if (str[i] == '\0') {
             break;
         }
-
         virtualAddr++;
         i++;
     }
