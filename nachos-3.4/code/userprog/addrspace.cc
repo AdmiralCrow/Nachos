@@ -73,8 +73,10 @@ AddrSpace::AddrSpace(OpenFile *executable) {
     pcb->setID(pid);
 }
 
-// NEW Copy Constructor for Fork
-AddrSpace::AddrSpace(const AddrSpace *parentSpace, PCB *childPCB) {
+//----------------------------------------------------------------------
+// AddrSpace::AddrSpace (copy constructor, used in Fork)
+//----------------------------------------------------------------------
+AddrSpace::AddrSpace(const AddrSpace *parentSpace) {
     numPages = parentSpace->numPages;
     pageTable = new TranslationEntry[numPages];
 
@@ -94,8 +96,12 @@ AddrSpace::AddrSpace(const AddrSpace *parentSpace, PCB *childPCB) {
               PageSize);
     }
 
-    pcb = childPCB;  // Use existing child PCB passed from Fork()
+    pcb = new PCB(currentThread); // If you are managing PCB inside AddrSpace
+    int pid = processManager->getPID();
+    ASSERT(pid != -1);
+    pcb->setID(pid);
 }
+
 
 AddrSpace::~AddrSpace() {
     for (unsigned int i = 0; i < numPages; i++) {
