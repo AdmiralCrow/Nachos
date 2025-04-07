@@ -78,3 +78,17 @@ fork.o: fork.c
 fork: fork.o start.o 
 	$(LD) $(LDFLAGS) start.o fork.o -o fork.coff
 	../bin/coff2noff fork.coff fork
+	
+exec.o: exec.c
+	$(CC) $(CFLAGS) -c exec.c
+
+exec: exec.o start.o 
+	$(LD) $(LDFLAGS) start.o exec.o -o exec.coff
+	../bin/coff2noff exec.coff exec
+
+memory.o: memory.c
+	$(CC) $(CFLAGS) -c memory.c
+
+memory: memory.o start.o 
+	$(LD) $(LDFLAGS) start.o memory.o -o memory.coff
+	../bin/coff2noff memory.coff memory
