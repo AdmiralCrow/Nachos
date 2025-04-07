@@ -25,12 +25,13 @@ class AddrSpace {
   AddrSpace(const AddrSpace *parentSpace);      
   AddrSpace(const AddrSpace *parentSpace, PCB *childPCB);
   ~AddrSpace();
+  
 
     void InitRegisters();		// Initialize user-level CPU registers,
 					// before jumping to user code
     void SaveState();			// Save address space-specific info on a context switch
     void RestoreState();		// Restore address space-specific info on a context switch
-
+    int getNumPages() const;
     // New function to load a segment from a file into the address space.
     int ReadFile(int virtAddr, OpenFile *file, int size, int fileAddr);
 
