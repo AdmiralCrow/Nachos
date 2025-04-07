@@ -6,42 +6,38 @@
 #include "memory_manager.h"
 #include "syscall_handlers.h"
 
-// Corrected signature for Thread::Fork
+// This function is the starting point of the child process.
 static void ChildProcessStarter(int arg) {
     PCB *childPCB = (PCB *)arg;
     Thread *childThread = childPCB->getThread();
 
     currentThread = childThread;
 
-    // Set the PC register to the function start address
     int funcAddr = childPCB->getStartAddress();
     machine->WriteRegister(PCReg, funcAddr);
     machine->WriteRegister(NextPCReg, funcAddr + 4);
 
-    // Restore register and address space state
     childThread->space->InitRegisters();
     childThread->space->RestoreState();
 
-    machine->Run();  // Never returns
+    machine->Run();  // Should never return
     ASSERT(FALSE);
 }
 
-
 //----------------------------------------------------------------------
-// Fork()
+// SysFork()
 //----------------------------------------------------------------------
 void SysFork() {
-    int funcAddr = machine->ReadRegister(4);  // Address to start
+    int funcAddr = machine->ReadRegister(4);  // Function address passed from user program
     int pid = currentThread->space->getPCB()->getID();
+
     printf("System Call: [%d] invoked Fork.\n", pid);
     printf("Process [%d] Fork: start at address [0x%x] with [%d] pages memory\n",
-        pid, funcAddr, currentThread->space->getNumPages());
+           pid, funcAddr, currentThread->space->getNumPages());
 
-    SpaceId childId = Fork((void (*)())funcAddr);  // Actual fork logic
-    machine->WriteRegister(2, childId);
+    SpaceId childId = Fork((void (*)())funcAddr);  // Do actual fork
+    machine->WriteRegister(2, childId);            // Return child PID
 }
-
-
 
 //----------------------------------------------------------------------
 // SysExec()
@@ -58,7 +54,7 @@ void SysExec() {
     OpenFile *executable = fileSystem->Open(filename);
     if (executable == NULL) {
         machine->WriteRegister(2, -1);
-        delete [] filename;
+        delete[] filename;
         return;
     }
 
@@ -66,7 +62,7 @@ void SysExec() {
     delete executable;
     if (newSpace == NULL) {
         machine->WriteRegister(2, -1);
-        delete [] filename;
+        delete[] filename;
         return;
     }
 
@@ -74,9 +70,9 @@ void SysExec() {
     newSpace->InitRegisters();
     newSpace->RestoreState();
     machine->WriteRegister(2, 1);
-    delete [] filename;
-    machine->Run();
-    machine->WriteRegister(2, -1);
+    delete[] filename;
+    machine->Run();  // Never returns
+    machine->WriteRegister(2, -1);  // Just in case
 }
 
 //----------------------------------------------------------------------
@@ -85,16 +81,17 @@ void SysExec() {
 void SysExit() {
     int exitStatus = machine->ReadRegister(4);
     int pid = currentThread->space->getPCB()->getID();
+
     printf("System Call: [%d] invoked Exit.\n", pid);
     printf("Process [%d] exits with [%d]\n", pid, exitStatus);
 
     PCB *pcb = currentThread->space->getPCB();
     pcb->setExitStatus(exitStatus);
+
     processManager->clearPID(pcb->getID());
     currentThread->Finish();
-    ASSERT(FALSE); // should not return
+    ASSERT(FALSE);  // Should never reach here
 }
-
 
 //----------------------------------------------------------------------
 // SysYield()
@@ -104,7 +101,6 @@ void SysYield() {
     printf("System Call: [%d] invoked Yield.\n", pid);
     currentThread->Yield();
 }
-
 
 //----------------------------------------------------------------------
 // SysJoin()
@@ -141,6 +137,10 @@ void SysKill() {
         machine->WriteRegister(2, 0);
     }
 }
+
+//----------------------------------------------------------------------
+// Fork() - Internal logic for process duplication
+//----------------------------------------------------------------------
 SpaceId Fork(void (*func)()) {
     int parentPid = currentThread->space->getPCB()->getID();
     DEBUG('a', "System Call: %d invoked Fork\n", parentPid);
@@ -166,11 +166,13 @@ SpaceId Fork(void (*func)()) {
 
     childPCB->setID(childPid);
     childPCB->setParent(currentThread->space->getPCB());
-    childPCB->setStartAddress((int)func);  // <<< Important: save function addr
-
-    processManager->setPCB(childPid, childPCB);    
+    childPCB->setStartAddress((int)func);
+    processManager->setPCB(childPid, childPCB);
 
     DEBUG('a', "Forking child %d with thread %s\n", childPid, childThread->getName());
+
+    // ✅ START THE CHILD PROCESS
+    childThread->Fork(ChildProcessStarter, (int)childPCB);
 
     return childPid;
 }
