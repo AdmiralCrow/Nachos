@@ -31,14 +31,14 @@ static void ChildProcessStarter(int arg) {
 // Fork()
 //----------------------------------------------------------------------
 void SysFork() {
-    int funcAddr = machine->ReadRegister(4);  // Get start address of function
-    int parentPid = currentThread->space->getPCB()->getID();
+    int funcAddr = machine->ReadRegister(4);  // Address to start
+    int pid = currentThread->space->getPCB()->getID();
+    printf("System Call: [%d] invoked Fork.\n", pid);
+    printf("Process [%d] Fork: start at address [0x%x] with [%d] pages memory\n",
+        pid, funcAddr, currentThread->space->getNumPages());
 
-    DEBUG('a', "Func address passed to Fork: 0x%x\n", funcAddr);
-    DEBUG('a', "System Call: %d invoked Fork\n", parentPid);
-
-    SpaceId childId = Fork((void (*)())funcAddr);  // Call actual fork logic
-    machine->WriteRegister(2, childId);            // Return child PID
+    SpaceId childId = Fork((void (*)())funcAddr);  // Actual fork logic
+    machine->WriteRegister(2, childId);
 }
 
 
@@ -85,29 +85,26 @@ void SysExec() {
 void SysExit() {
     int exitStatus = machine->ReadRegister(4);
     int pid = currentThread->space->getPCB()->getID();
-
-    DEBUG('a', "System Call: %d invoked Exit\n", pid);
-    DEBUG('a', "Process %d exits with %d\n", pid, exitStatus);
+    printf("System Call: [%d] invoked Exit.\n", pid);
+    printf("Process [%d] exits with [%d]\n", pid, exitStatus);
 
     PCB *pcb = currentThread->space->getPCB();
     pcb->setExitStatus(exitStatus);
-
-    // FIX Condition::Broadcast() to use a Lock — TEMPORARY place-holder
-    // pcb->joinCond->Broadcast(lock); <-- to be fixed once lock is added
-
     processManager->clearPID(pcb->getID());
     currentThread->Finish();
-    ASSERT(FALSE);
+    ASSERT(FALSE); // should not return
 }
+
 
 //----------------------------------------------------------------------
 // SysYield()
 //----------------------------------------------------------------------
 void SysYield() {
     int pid = currentThread->space->getPCB()->getID();
-    DEBUG('a', "System Call: %d invoked Yield\n", pid);
+    printf("System Call: [%d] invoked Yield.\n", pid);
     currentThread->Yield();
 }
+
 
 //----------------------------------------------------------------------
 // SysJoin()
