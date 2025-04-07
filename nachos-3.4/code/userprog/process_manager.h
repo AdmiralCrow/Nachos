@@ -11,7 +11,7 @@ public:
     // Constructor: initializes with a maximum number of processes.
     ProcessManager(int maxProcesses);
     ~ProcessManager();
-
+    void setPCB(int pid, PCB* pcb);
     // Allocate and return an unused process ID.
     // Returns -1 if none is available.
     int getPID();
@@ -33,6 +33,8 @@ public:
 
     // Kill the process with the given pid.
     bool Kill(int pid);
+
+
 
 private:
     BitMap *pidMap;      // Bitmap tracking used process IDs.
