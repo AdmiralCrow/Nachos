@@ -144,3 +144,38 @@ void SysKill() {
         machine->WriteRegister(2, 0);
     }
 }
+SpaceId Fork(void (*func)()) {
+    int parentPid = currentThread->space->getPCB()->getID();
+    DEBUG('a', "System Call: %d invoked Fork\n", parentPid);
+    DEBUG('a', "Process %d Fork: start at address 0x%x\n", parentPid, (int)func);
+
+    AddrSpace *childSpace = new AddrSpace(currentThread->space);
+    if (!childSpace) {
+        DEBUG('a', "Failed to allocate address space\n");
+        return -1;
+    }
+
+    Thread *childThread = new Thread("child");
+    childThread->space = childSpace;
+
+    PCB *childPCB = new PCB(childThread);
+    int childPid = processManager->getPID();
+    if (childPid == -1) {
+        delete childThread;
+        delete childSpace;
+        delete childPCB;
+        return -1;
+    }
+
+    childPCB->setID(childPid);
+    childPCB->setParent(currentThread->space->getPCB());
+    childPCB->setStartAddress((int)func);  // <<< Important: save function addr
+
+    processManager->pcbTable[childPid] = childPCB;
+
+    DEBUG('a', "Forking child %d with thread %s\n", childPid, childThread->getName());
+
+    childThread->Fork(ChildProcessStarter, (int)childPCB);
+
+    return childPid;
+}
