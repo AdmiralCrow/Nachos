@@ -52,7 +52,10 @@ AddrSpace::AddrSpace(OpenFile *executable) {
         pageTable[i].readOnly = FALSE;
     }
 
-    bzero(machine->mainMemory, size);
+    for (unsigned int i = 0; i < numPages; i++) {
+        bzero(&machine->mainMemory[pageTable[i].physicalPage * PageSize], PageSize);
+    }
+    
 
     if (noffH.code.size > 0) {
         DEBUG('a', "Initializing code segment, at 0x%x, size %d\n", 
@@ -79,11 +82,20 @@ AddrSpace::AddrSpace(OpenFile *executable) {
 AddrSpace::AddrSpace(const AddrSpace *parentSpace) {
     numPages = parentSpace->numPages;
     pageTable = new TranslationEntry[numPages];
+    DEBUG('a', "Fork: attempting to allocate %d pages\n", numPages);
+    DEBUG('a', "Fork: pages available = %d\n", memoryManager->getFreePageCount());
+
+    bool success = true;
 
     for (unsigned int i = 0; i < numPages; i++) {
         pageTable[i].virtualPage = i;
         int physPage = memoryManager->getPage();
-        ASSERT(physPage != -1);
+        if (physPage == -1) {
+            DEBUG('a', "Out of memory during fork! Cleaning up.\n");
+            success = false;
+            break;
+        }
+
         pageTable[i].physicalPage = physPage;
         pageTable[i].valid = TRUE;
         pageTable[i].use = FALSE;
@@ -96,11 +108,27 @@ AddrSpace::AddrSpace(const AddrSpace *parentSpace) {
               PageSize);
     }
 
-    pcb = new PCB(currentThread); // If you are managing PCB inside AddrSpace
+    if (!success) {
+        // Free any pages that were allocated before failure
+        for (unsigned int j = 0; j < numPages; j++) {
+            if (pageTable[j].valid) {
+                memoryManager->clearPage(pageTable[j].physicalPage);
+            }
+        }
+        delete[] pageTable;
+        pageTable = nullptr;
+        numPages = 0;
+        pcb = nullptr;
+        return;  // Gracefully return to allow caller to detect failure
+    }
+
+    // Only allocate PCB if address space creation succeeded
+    pcb = new PCB(currentThread);
     int pid = processManager->getPID();
     ASSERT(pid != -1);
     pcb->setID(pid);
 }
+
 
 
 AddrSpace::~AddrSpace() {

@@ -17,6 +17,10 @@ MemoryManager::~MemoryManager() {
     delete bitmap;
     delete lock;
 }
+int MemoryManager::getFreePageCount() {
+    return bitmap->NumClear();  // assuming you're using a BitMap
+}
+
 
 int MemoryManager::getPage() {
     // Acquire the lock to ensure thread safety.
