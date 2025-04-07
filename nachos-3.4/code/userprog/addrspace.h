@@ -21,11 +21,10 @@ class PCB;  // Forward declaration of PCB class
 
 class AddrSpace {
   public:
-    AddrSpace(OpenFile *executable);	// Create an address space,
-					// initializing it with the program
-    AddrSpace(const AddrSpace *parentSpace); // NEW Copy constructor
-					// stored in the file "executable"
-    ~AddrSpace();			// De-allocate an address space
+  AddrSpace(OpenFile *executable);           
+  AddrSpace(const AddrSpace *parentSpace);      
+  AddrSpace(const AddrSpace *parentSpace, PCB *childPCB);
+  ~AddrSpace();
 
     void InitRegisters();		// Initialize user-level CPU registers,
 					// before jumping to user code
