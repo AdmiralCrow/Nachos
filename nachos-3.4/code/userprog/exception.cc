@@ -58,15 +58,10 @@ void ExceptionHandler(ExceptionType which) {
                 SysJoin();
                 break;
 
-            case SC_Fork: {
-                int funcAddr = machine->ReadRegister(4);
-                DEBUG('a', "Func address passed to Fork: 0x%x\n", funcAddr);
-                DEBUG('a', "System Call: %d invoked Fork\n", pid);
-                SpaceId childId = SysFork((void (*)())funcAddr);
-                DEBUG('a', "Process %d Fork: start at address 0x%x with %d pages memory\n", pid, funcAddr, 0);
-                machine->WriteRegister(2, childId);
-                break;
-            }
+            case SC_Fork:
+            SysFork(); 
+            break;
+            
 
             case SC_Yield:
                 SysYield();
