@@ -1,24 +1,14 @@
 // addrspace.cc  
-//	Routines to manage address spaces (executing user programs).
-//
-// Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.
-
 #include "copyright.h"
 #include "system.h"
 #include "addrspace.h"
 #include "noff.h"
-#include "pcb.h" 
+#include "pcb.h"
 #ifdef HOST_SPARC
 #include <strings.h>
 #endif
 
-//----------------------------------------------------------------------
-// SwapHeader
-//----------------------------------------------------------------------
-static void 
-SwapHeader (NoffHeader *noffH)
-{
+static void SwapHeader(NoffHeader *noffH) {
     noffH->noffMagic = WordToHost(noffH->noffMagic);
     noffH->code.size = WordToHost(noffH->code.size);
     noffH->code.virtualAddr = WordToHost(noffH->code.virtualAddr);
@@ -31,11 +21,7 @@ SwapHeader (NoffHeader *noffH)
     noffH->uninitData.inFileAddr = WordToHost(noffH->uninitData.inFileAddr);
 }
 
-//----------------------------------------------------------------------
-// AddrSpace::AddrSpace
-//----------------------------------------------------------------------
-AddrSpace::AddrSpace(OpenFile *executable)
-{
+AddrSpace::AddrSpace(OpenFile *executable) {
     NoffHeader noffH;
     unsigned int i, size;
 
@@ -48,7 +34,6 @@ AddrSpace::AddrSpace(OpenFile *executable)
     size = noffH.code.size + noffH.initData.size + noffH.uninitData.size + UserStackSize;
     numPages = divRoundUp(size, PageSize);
     size = numPages * PageSize;
-
     ASSERT(numPages <= NumPhysPages);
 
     DEBUG('a', "Initializing address space, num pages %d, size %d\n", numPages, size);
@@ -88,11 +73,8 @@ AddrSpace::AddrSpace(OpenFile *executable)
     pcb->setID(pid);
 }
 
-//----------------------------------------------------------------------
-// AddrSpace::AddrSpace (Copy Constructor)
-//----------------------------------------------------------------------
-AddrSpace::AddrSpace(const AddrSpace *parentSpace)
-{
+// NEW Copy Constructor for Fork
+AddrSpace::AddrSpace(const AddrSpace *parentSpace, PCB *childPCB) {
     numPages = parentSpace->numPages;
     pageTable = new TranslationEntry[numPages];
 
@@ -112,17 +94,10 @@ AddrSpace::AddrSpace(const AddrSpace *parentSpace)
               PageSize);
     }
 
-    pcb = new PCB(currentThread);
-    int pid = processManager->getPID();
-    ASSERT(pid != -1);
-    pcb->setID(pid);
+    pcb = childPCB;  // Use existing child PCB passed from Fork()
 }
 
-//----------------------------------------------------------------------
-// AddrSpace::~AddrSpace
-//----------------------------------------------------------------------
-AddrSpace::~AddrSpace()
-{
+AddrSpace::~AddrSpace() {
     for (unsigned int i = 0; i < numPages; i++) {
         memoryManager->clearPage(pageTable[i].physicalPage);
     }
@@ -130,11 +105,7 @@ AddrSpace::~AddrSpace()
     delete pcb;
 }
 
-//----------------------------------------------------------------------
-// AddrSpace::InitRegisters
-//----------------------------------------------------------------------
-void AddrSpace::InitRegisters()
-{
+void AddrSpace::InitRegisters() {
     for (int i = 0; i < NumTotalRegs; i++)
         machine->WriteRegister(i, 0);
 
@@ -146,14 +117,12 @@ void AddrSpace::InitRegisters()
 
 void AddrSpace::SaveState() {}
 
-void AddrSpace::RestoreState()
-{
+void AddrSpace::RestoreState() {
     machine->pageTable = pageTable;
     machine->pageTableSize = numPages;
 }
 
-int AddrSpace::ReadFile(int virtAddr, OpenFile *file, int size, int fileAddr)
-{
+int AddrSpace::ReadFile(int virtAddr, OpenFile *file, int size, int fileAddr) {
     int physAddr = virtAddr;
     char *buffer = new char[size];
     int bytesRead = file->ReadAt(buffer, size, fileAddr);
