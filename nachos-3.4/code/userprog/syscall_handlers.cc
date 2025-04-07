@@ -44,7 +44,7 @@ void SysFork() {
 //----------------------------------------------------------------------
 void SysExec() {
     int pid = currentThread->space->getPCB()->getID();
-    DEBUG('a', "System Call: %d invoked Exec\n", pid);
+    printf("System Call: [%d] invoked Exec.\n", pid);
 
     int filenameAddr = machine->ReadRegister(4);
     char *filename = User2Kernel(filenameAddr);
