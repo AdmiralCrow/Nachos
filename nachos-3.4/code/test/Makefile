@@ -28,7 +28,7 @@ CPP = gcc -m32 -E
 INCDIR = -I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR)
 
-all: halt exit shell matmult sort fork exec memory
+all: halt exit shell matmult sort fork exec memory join
 
 
 start.o: start.s ../userprog/syscall.h
