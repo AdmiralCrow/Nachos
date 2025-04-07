@@ -171,11 +171,9 @@ SpaceId Fork(void (*func)()) {
     childPCB->setParent(currentThread->space->getPCB());
     childPCB->setStartAddress((int)func);  // <<< Important: save function addr
 
-    processManager->pcbTable[childPid] = childPCB;
+    processManager->setPCB(childPid, childPCB);    
 
     DEBUG('a', "Forking child %d with thread %s\n", childPid, childThread->getName());
-
-    childThread->Fork(ChildProcessStarter, (int)childPCB);
 
     return childPid;
 }
