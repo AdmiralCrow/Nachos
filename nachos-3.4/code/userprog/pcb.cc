@@ -34,9 +34,10 @@ PCB* PCB::getParent() const {
     return parentPCB;
 }
 
-void PCB::setExitStatus(int status) {
+void PCB::setExitStatus(int status, Lock *lock) {
     exitStatus = status;
-    exited = true;  
+    exited = true;
+    joinCond->Broadcast(lock);  // notify waiting threads
 }
 
 int PCB::getExitStatus() const {

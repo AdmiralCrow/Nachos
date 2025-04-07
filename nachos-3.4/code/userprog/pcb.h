@@ -17,14 +17,16 @@ public:
     void setParent(PCB *parent);
     PCB* getParent() const;
 
-    void setExitStatus(int status);
+    void setExitStatus(int status, Lock *lock);
     int getExitStatus() const;
 
     Thread* getThread() const;  // Getter for processThread
 
     void setStartAddress(int addr);     
     int getStartAddress() const;        
+   
     bool hasExited() const;     // Used by Join
+    Lock* getLock() const;
 
 
     // Condition variable for join (pointer only)
