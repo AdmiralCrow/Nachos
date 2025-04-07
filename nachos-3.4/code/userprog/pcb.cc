@@ -59,6 +59,7 @@ int PCB::getStartAddress() const {
     return startAddress;
 }
 
-bool PCB::hasExited() const {
-    return exited;
+void PCB::hasExited(Lock *lock) {
+    exited = true;
+    joinCond->Broadcast(lock);  
 }
