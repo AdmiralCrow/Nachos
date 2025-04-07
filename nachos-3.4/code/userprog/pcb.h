@@ -1,8 +1,7 @@
 #ifndef PCB_H
 #define PCB_H
 
-#include "thread.h"   
-#include "synch.h"  
+#include "thread.h"   // for Thread*
 
 class Condition;
 class Thread;
@@ -18,17 +17,13 @@ public:
     void setParent(PCB *parent);
     PCB* getParent() const;
 
-    void setExitStatus(int status, Lock *lock);
+    void setExitStatus(int status);
     int getExitStatus() const;
 
     Thread* getThread() const;  // Getter for processThread
 
     void setStartAddress(int addr);     
     int getStartAddress() const;        
-   
-    bool hasExited() const;     // Used by Join
-    Lock* getLock() const;
-
 
     // Condition variable for join (pointer only)
     Condition *joinCond;
@@ -38,7 +33,7 @@ private:
     Thread *processThread;
     PCB *parentPCB;
     int exitStatus;
-    bool exited;
+
     int startAddress;  
 };
 

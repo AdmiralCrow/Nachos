@@ -68,21 +68,10 @@ bool ProcessManager::isChild(int pid) {
 }
 
 int ProcessManager::Join(Thread *parent, int pid) {
-    lock->Acquire();  
     PCB *childPCB = pcbTable[pid];
-    while (!childPCB->hasExited()) {
-        childPCB->joinCond->Wait(lock);  
-    }
-    int status = childPCB->getExitStatus();
-    lock->Release();  
-    return status;
+    childPCB->joinCond->Wait(lock);
+    return childPCB->getExitStatus();
 }
-
-
-Lock* ProcessManager::getLock() const {
-    return lock;
-}
-
 
 bool ProcessManager::Kill(int pid) {
     if (!pidMap->Test(pid)) return false;
