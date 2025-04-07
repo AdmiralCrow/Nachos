@@ -87,6 +87,7 @@ void SysExit() {
 
     PCB *pcb = currentThread->space->getPCB();
     pcb->setExitStatus(exitStatus);
+    pcb->markExited(); 
 
     processManager->clearPID(pcb->getID());
     currentThread->Finish();

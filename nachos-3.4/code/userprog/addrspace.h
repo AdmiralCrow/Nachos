@@ -38,6 +38,7 @@ class AddrSpace {
   // Accessor for the associated PCB.
   PCB* getPCB() { return pcb; }
   bool wasForkSuccessful() const;
+  
   private:
 
     bool forkSuccess; 

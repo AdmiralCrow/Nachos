@@ -24,6 +24,9 @@ public:
 
     void setStartAddress(int addr);     
     int getStartAddress() const;        
+    void markExited();          // Called during SysExit
+    bool hasExited() const;     // Used by Join
+
 
     // Condition variable for join (pointer only)
     Condition *joinCond;
@@ -33,7 +36,7 @@ private:
     Thread *processThread;
     PCB *parentPCB;
     int exitStatus;
-
+    bool exited;
     int startAddress;  
 };
 

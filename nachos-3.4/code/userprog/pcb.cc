@@ -6,11 +6,13 @@ PCB::PCB(Thread *thread)
 {
     processThread = thread;
     parentPCB = NULL;
-    processID = -1;      // Will be set by Process Manager.
-    exitStatus = 0;      // Default exit status.
-    startAddress = 0;    // Default start address for child processes
+    processID = -1;
+    exitStatus = 0;
+    startAddress = 0;
     joinCond = new Condition("joinCond");
+    exited = false;  // <- add this here
 }
+
 
 PCB::~PCB()
 {
@@ -53,3 +55,13 @@ void PCB::setStartAddress(int addr) {
 int PCB::getStartAddress() const {
     return startAddress;
 }
+
+void PCB::markExited() {
+    exited = true;
+    joinCond->Broadcast(); 
+}
+
+bool PCB::hasExited() const {
+    return exited;
+}
+
