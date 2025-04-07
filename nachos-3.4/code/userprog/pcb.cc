@@ -12,6 +12,7 @@ PCB::PCB(Thread *thread)
     joinCond = new Condition("joinCond");
     exited = false;  // <- add this here
 }
+bool exited;
 
 
 PCB::~PCB()
@@ -56,9 +57,9 @@ int PCB::getStartAddress() const {
     return startAddress;
 }
 
-void PCB::markExited() {
+void PCB::hasExited(Lock *lock) {
     exited = true;
-    joinCond->Broadcast(); 
+    joinCond->Broadcast(lock);  
 }
 
 bool PCB::hasExited() const {

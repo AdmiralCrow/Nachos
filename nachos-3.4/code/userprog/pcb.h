@@ -24,7 +24,6 @@ public:
 
     void setStartAddress(int addr);     
     int getStartAddress() const;        
-    void markExited();          // Called during SysExit
     bool hasExited() const;     // Used by Join
 
 
