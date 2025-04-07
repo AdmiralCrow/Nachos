@@ -23,6 +23,13 @@ ProcessManager::~ProcessManager()
     delete [] pcbTable;
     delete lock;
 }
+void ProcessManager::setPCB(int pid, PCB* pcb) {
+    lock->Acquire();
+    if (pid >= 0 && pid < maxProcesses) {
+        pcbTable[pid] = pcb;
+    }
+    lock->Release();
+}
 
 int ProcessManager::getPID()
 {
