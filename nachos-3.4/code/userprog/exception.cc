@@ -41,44 +41,54 @@ void ExceptionHandler(ExceptionType which) {
     if (which == SyscallException) {
         switch (type) {
             case SC_Halt:
-                DEBUG('a', "System Call: %d invoked Halt\n", pid);
+                DEBUG('a', "System Call: [%d] invoked Halt.\n", pid);
                 DEBUG('a', "Shutdown, initiated by user program.\n");
                 interrupt->Halt();
                 break;
 
             case SC_Exit:
+                DEBUG('a', "System Call: [%d] invoked Exit.\n", pid);
                 SysExit();
                 break;
 
             case SC_Exec:
+                DEBUG('a', "System Call: [%d] invoked Exec.\n", pid);
                 SysExec();
                 break;
 
             case SC_Join:
+                DEBUG('a', "System Call: [%d] invoked Join.\n", pid);
                 SysJoin();
                 break;
 
-            case SC_Fork:
-                SysFork(); 
+            case SC_Fork: {
+                int funcAddr = machine->ReadRegister(4);
+                DEBUG('a', "System Call: [%d] invoked Fork.\n", pid);
+                DEBUG('a', "Process [%d] Fork: start at address [0x%x]\n", pid, funcAddr);
+                SysFork();
                 break;
-            
+            }
+
             case SC_Yield:
+                DEBUG('a', "System Call: [%d] invoked Yield.\n", pid);
                 SysYield();
                 break;
 
             case SC_Kill:
+                DEBUG('a', "System Call: [%d] invoked Kill.\n", pid);
                 SysKill();
                 break;
 
             default:
-                printf("Unexpected system call %d\n", type);
+                printf("Unexpected system call [%d]\n", type);
                 ASSERT(FALSE);
         }
     } else {
-        printf("Unexpected user mode exception %d %d\n", which, type);
+        printf("Unexpected user mode exception [%d] [%d]\n", which, type);
         ASSERT(FALSE);
     }
 
     // Advance PC so syscall instruction isn't repeated.
     IncrementPC();
 }
+
