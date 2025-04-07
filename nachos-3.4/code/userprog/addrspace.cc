@@ -39,7 +39,8 @@ AddrSpace::AddrSpace(OpenFile *executable) {
 
     DEBUG('a', "Initializing address space, num pages %d, size %d\n", numPages, size);
     DEBUG('a', "Loaded Program: %d code | %d data | %d bss\n", 
-          noffH.code.size, noffH.initData.size, noffH.uninitData.size);
+        noffH.code.size, noffH.initData.size, noffH.uninitData.size);
+    ASSERT(noffH.noffMagic == NOFFMAGIC);
 
     pageTable = new TranslationEntry[numPages];
     for (i = 0; i < numPages; i++) {
@@ -140,7 +141,7 @@ void AddrSpace::InitRegisters() {
     for (int i = 0; i < NumTotalRegs; i++)
         machine->WriteRegister(i, 0);
 
-    machine->WriteRegister(PCReg, 0);    
+    machine->WriteRegister(PCReg, 0);	
     machine->WriteRegister(NextPCReg, 4);
     machine->WriteRegister(StackReg, numPages * PageSize - 16);
     DEBUG('a', "Initializing stack register to %d\n", numPages * PageSize - 16);

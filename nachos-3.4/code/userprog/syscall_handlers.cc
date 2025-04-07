@@ -49,7 +49,7 @@ void SysExec() {
     int filenameAddr = machine->ReadRegister(4);
     char *filename = User2Kernel(filenameAddr);
 
-    DEBUG('a', "Exec Program: %d loading %s\n", pid, filename ? filename : "unknown");
+    printf("Exec Program: [%d] loading [%s]\n", pid, filename ? filename : "unknown");
 
     OpenFile *executable = fileSystem->Open(filename);
     if (executable == NULL) {
@@ -130,12 +130,13 @@ void SysKill() {
     DEBUG('a', "System Call: %d invoked Kill\n", callerPid);
 
     if (!processManager->Kill(pid)) {
-        DEBUG('a', "Process %d cannot kill process %d: doesn't exist\n", callerPid, pid);
+        printf("Process [%d] cannot kill process [%d]: doesn't exist\n", callerPid, pid);
         machine->WriteRegister(2, -1);
     } else {
-        DEBUG('a', "Process %d killed process %d\n", callerPid, pid);
+        printf("Process [%d] killed process [%d]\n", callerPid, pid);
         machine->WriteRegister(2, 0);
     }
+    
 }
 
 //----------------------------------------------------------------------
