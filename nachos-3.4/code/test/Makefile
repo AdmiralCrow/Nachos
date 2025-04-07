@@ -101,6 +101,6 @@ kill: kill.o start.o
 
 join.o: join.c
 	$(CC) $(CFLAGS) -c join.c
-join: kill.o start.o
+join: join.o start.o
 	$(LD) $(LDFLAGS) start.o join.o -o join.coff
 	../bin/coff2noff join.coff join
