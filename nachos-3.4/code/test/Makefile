@@ -28,7 +28,7 @@ CPP = gcc -m32 -E
 INCDIR = -I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR)
 
-all: halt exit shell matmult sort fork exec memory join
+all: create fork exec memory kill join exit halt shell matmult sort
 
 
 start.o: start.s ../userprog/syscall.h
@@ -101,6 +101,8 @@ kill: kill.o start.o
 
 join.o: join.c
 	$(CC) $(CFLAGS) -c join.c
-join: join.o start.o
+
+join: join.o start.o 
 	$(LD) $(LDFLAGS) start.o join.o -o join.coff
 	../bin/coff2noff join.coff join
+
