@@ -83,7 +83,7 @@ AddrSpace::AddrSpace(const AddrSpace *parentSpace) {
     numPages = parentSpace->numPages;
     pageTable = new TranslationEntry[numPages];
     DEBUG('a', "Fork: attempting to allocate %d pages\n", numPages);
-    DEBUG('a', "Fork: pages available = %d\n", memoryManager->getFreePageCount());
+
 
     bool success = true;
 
