@@ -9,11 +9,9 @@ PCB::PCB(Thread *thread)
     processID = -1;
     exitStatus = 0;
     startAddress = 0;
+    exited = false;  // initialize properly
     joinCond = new Condition("joinCond");
-    exited = false;  // <- add this here
 }
-bool exited;
-
 
 PCB::~PCB()
 {
@@ -38,6 +36,7 @@ PCB* PCB::getParent() const {
 
 void PCB::setExitStatus(int status) {
     exitStatus = status;
+    exited = true;  
 }
 
 int PCB::getExitStatus() const {
@@ -48,7 +47,6 @@ Thread* PCB::getThread() const {
     return processThread;
 }
 
-// NEW: store the program counter for child process (e.g., from Fork())
 void PCB::setStartAddress(int addr) {
     startAddress = addr;
 }
@@ -60,8 +58,3 @@ int PCB::getStartAddress() const {
 bool PCB::hasExited() const {
     return exited;
 }
-
-bool PCB::hasExited() const {
-    return exited;
-}
-
