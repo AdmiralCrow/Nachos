@@ -1,5 +1,5 @@
 #include "pcb.h"
-#include "synch.h"    // bring in the full Condition definition
+#include "synch.h"
 #include "thread.h"
 
 PCB::PCB(Thread *thread)
@@ -8,6 +8,7 @@ PCB::PCB(Thread *thread)
     parentPCB = NULL;
     processID = -1;      // Will be set by Process Manager.
     exitStatus = 0;      // Default exit status.
+    startAddress = 0;    // Default start address for child processes
     joinCond = new Condition("joinCond");
 }
 
@@ -40,7 +41,15 @@ int PCB::getExitStatus() const {
     return exitStatus;
 }
 
-// Added this getter for processThread
 Thread* PCB::getThread() const {
     return processThread;
+}
+
+// NEW: store the program counter for child process (e.g., from Fork())
+void PCB::setStartAddress(int addr) {
+    startAddress = addr;
+}
+
+int PCB::getStartAddress() const {
+    return startAddress;
 }

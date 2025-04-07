@@ -22,6 +22,9 @@ public:
 
     Thread* getThread() const;  // Getter for processThread
 
+    void setStartAddress(int addr);     // ✅ NEW
+    int getStartAddress() const;        // ✅ NEW
+
     // Condition variable for join (pointer only)
     Condition *joinCond;
 
@@ -30,6 +33,8 @@ private:
     Thread *processThread;
     PCB *parentPCB;
     int exitStatus;
+
+    int startAddress;  // ✅ NEW: where child starts execution
 };
 
 #endif // PCB_H

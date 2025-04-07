@@ -9,30 +9,33 @@
 // Corrected signature for Thread::Fork
 static void ChildProcessStarter(int arg) {
     PCB *childPCB = (PCB *)arg;
-    Thread *childThread = childPCB->getThread(); // Use getter
+    Thread *childThread = childPCB->getThread();
 
-    currentThread = childThread; // Set current context
+    currentThread = childThread;
+
+    // Set the PC register to the function start address
+    int funcAddr = childPCB->getStartAddress();
+    machine->WriteRegister(PCReg, funcAddr);
+    machine->WriteRegister(NextPCReg, funcAddr + 4);
+
+    // Restore register and address space state
     childThread->space->InitRegisters();
     childThread->space->RestoreState();
-    machine->Run();
-    ASSERT(FALSE); // should not return
+
+    machine->Run();  // Never returns
+    ASSERT(FALSE);
 }
+
 
 //----------------------------------------------------------------------
 // Fork()
 //----------------------------------------------------------------------
-SpaceId SysFork(void (*func)()) {
+SpaceId Fork(void (*func)()) {
     int parentPid = currentThread->space->getPCB()->getID();
     DEBUG('a', "System Call: %d invoked Fork\n", parentPid);
 
-    // This is optional, since func is just a pointer. But we can print its address.
-    DEBUG('a', "Process %d Fork: start at address 0x%x with %d pages memory\n", parentPid, (int)func, 0);
-
     AddrSpace *childSpace = new AddrSpace(currentThread->space);
-    if (!childSpace) {
-        DEBUG('a', "Failed to create address space for child process\n"); //New debug statement
-        return -1;
-    }
+    if (!childSpace) return -1;
 
     Thread *childThread = new Thread("child");
     childThread->space = childSpace;
@@ -48,12 +51,14 @@ SpaceId SysFork(void (*func)()) {
 
     childPCB->setID(pid);
     childPCB->setParent(currentThread->space->getPCB());
-    DEBUG('a', "Child process created with PID %d\n", pid);  //New debug statement
-    // Cast PCB* to int for Fork
+
+    // ✅ Save function pointer for use in ChildProcessStarter
+    childPCB->setStartAddress((int)func);
+
     childThread->Fork(ChildProcessStarter, (int)childPCB);
-    DEBUG('a', "Forking child process %d with thread %s\n", pid, childThread->getName()); //New debug statement
     return pid;
 }
+
 
 //----------------------------------------------------------------------
 // SysExec()
