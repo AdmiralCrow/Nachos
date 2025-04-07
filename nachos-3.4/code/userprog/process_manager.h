@@ -33,6 +33,7 @@ public:
 
     // Kill the process with the given pid.
     bool Kill(int pid);
+    Lock* getLock() const;
 
 
 
@@ -41,6 +42,7 @@ private:
     PCB **pcbTable;      // Array of PCB pointers, indexed by process ID.
     Lock *lock;          // Lock to protect allocation and access.
     int maxProcesses;    // Maximum number of processes supported.
+    
 };
 
 #endif // PROCESS_MANAGER_H

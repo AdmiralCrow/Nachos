@@ -68,17 +68,22 @@ bool ProcessManager::isChild(int pid) {
 }
 
 int ProcessManager::Join(Thread *parent, int pid) {
-    lock->Acquire(); 
+    lock->Acquire();  // MUST acquire the lock before waiting
+
     PCB *childPCB = pcbTable[pid];
     while (!childPCB->hasExited()) {
-        childPCB->joinCond->Wait(lock);  
+        childPCB->joinCond->Wait(lock);  // Wait needs lock held
     }
 
     int status = childPCB->getExitStatus();
 
-    lock->Release();  
+    lock->Release();  // MUST release after done
 
     return status;
+}
+
+Lock* ProcessManager::getLock() const {
+    return lock;
 }
 
 
