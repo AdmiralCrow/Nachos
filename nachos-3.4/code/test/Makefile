@@ -99,3 +99,8 @@ kill: kill.o start.o
 	$(LD) $(LDFLAGS) start.o kill.o -o kill.coff
 	../bin/coff2noff kill.coff kill
 
+join.o: join.c
+	$(CC) $(CFLAGS) -c join.c
+join: kill.o start.o
+	$(LD) $(LDFLAGS) start.o join.o -o join.coff
+	../bin/coff2noff join.coff join
