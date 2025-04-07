@@ -59,10 +59,9 @@ void ExceptionHandler(ExceptionType which) {
                 break;
 
             case SC_Fork:
-            SysFork(); 
-            break;
+                SysFork(); 
+                break;
             
-
             case SC_Yield:
                 SysYield();
                 break;
