@@ -1,165 +1,178 @@
-#include "copyright.h"
+#include "copyright.h" 
 #include "system.h"
-#include "addrspace.h"
-#include "noff.h"
+#include "syscall.h"
 #include "pcb.h"
-#ifdef HOST_SPARC
-#include <strings.h>
-#endif
+#include "addrspace.h"
+#include "memory_manager.h"
+#include "syscall_handlers.h"
 
-static void SwapHeader(NoffHeader *noffH) {
-    noffH->noffMagic = WordToHost(noffH->noffMagic);
-    noffH->code.size = WordToHost(noffH->code.size);
-    noffH->code.virtualAddr = WordToHost(noffH->code.virtualAddr);
-    noffH->code.inFileAddr = WordToHost(noffH->code.inFileAddr);
-    noffH->initData.size = WordToHost(noffH->initData.size);
-    noffH->initData.virtualAddr = WordToHost(noffH->initData.virtualAddr);
-    noffH->initData.inFileAddr = WordToHost(noffH->initData.inFileAddr);
-    noffH->uninitData.size = WordToHost(noffH->uninitData.size);
-    noffH->uninitData.virtualAddr = WordToHost(noffH->uninitData.virtualAddr);
-    noffH->uninitData.inFileAddr = WordToHost(noffH->uninitData.inFileAddr);
+// This function is the starting point of the child process.
+static void ChildProcessStarter(int arg) {
+    PCB *childPCB = (PCB *)arg;
+    Thread *childThread = childPCB->getThread();
+
+    currentThread = childThread;
+
+    int funcAddr = childPCB->getStartAddress();
+    machine->WriteRegister(PCReg, funcAddr);
+    machine->WriteRegister(NextPCReg, funcAddr + 4);
+
+    childThread->space->InitRegisters();
+    childThread->space->RestoreState();
+
+    machine->Run();  // Should never return
+    ASSERT(FALSE);
 }
 
-AddrSpace::AddrSpace(OpenFile *executable) {
-    NoffHeader noffH;
-    unsigned int size;
+//----------------------------------------------------------------------
+// SysFork()
+//----------------------------------------------------------------------
+void SysFork() {
+    int funcAddr = machine->ReadRegister(4);  // Function address passed from user program
+    int pid = currentThread->space->getPCB()->getID();
 
-    executable->ReadAt((char *)&noffH, sizeof(noffH), 0);
-    if ((noffH.noffMagic != NOFFMAGIC) && 
-        (WordToHost(noffH.noffMagic) == NOFFMAGIC))
-        SwapHeader(&noffH);
-    ASSERT(noffH.noffMagic == NOFFMAGIC);
+    printf("System Call: [%d] invoked Fork.\n", pid);
+    printf("Process [%d] Fork: start at address [0x%x] with [%d] pages memory\n",
+           pid, funcAddr, currentThread->space->getNumPages());
 
-    size = noffH.code.size + noffH.initData.size + noffH.uninitData.size + UserStackSize;
-    numPages = divRoundUp(size, PageSize);
-    size = numPages * PageSize;
-    ASSERT(numPages <= NumPhysPages);
-
-    DEBUG('a', "Initializing address space, num pages %d, size %d\n", numPages, size);
-    DEBUG('a', "Loaded Program: %d code | %d data | %d bss\n", 
-          noffH.code.size, noffH.initData.size, noffH.uninitData.size);
-
-    pageTable = new TranslationEntry[numPages];
-    for (unsigned int i = 0; i < numPages; i++) {
-        pageTable[i].virtualPage = i;
-        int physPage = memoryManager->getPage();
-        ASSERT(physPage != -1);
-        pageTable[i].physicalPage = physPage;
-        pageTable[i].valid = TRUE;
-        pageTable[i].use = FALSE;
-        pageTable[i].dirty = FALSE;
-        pageTable[i].readOnly = FALSE;
-    }
-
-    for (unsigned int i = 0; i < numPages; i++) {
-        bzero(&machine->mainMemory[pageTable[i].physicalPage * PageSize], PageSize);
-    }
-
-    if (noffH.code.size > 0) {
-        DEBUG('a', "Initializing code segment, at 0x%x, size %d\n", 
-              noffH.code.virtualAddr, noffH.code.size);
-        executable->ReadAt(&(machine->mainMemory[noffH.code.virtualAddr]),
-                           noffH.code.size, noffH.code.inFileAddr);
-    }
-    if (noffH.initData.size > 0) {
-        DEBUG('a', "Initializing data segment, at 0x%x, size %d\n", 
-              noffH.initData.virtualAddr, noffH.initData.size);
-        executable->ReadAt(&(machine->mainMemory[noffH.initData.virtualAddr]),
-                           noffH.initData.size, noffH.initData.inFileAddr);
-    }
-
-    pcb = new PCB(currentThread);
-    int pid = processManager->getPID();
-    ASSERT(pid != -1);
-    pcb->setID(pid);
-    forkSuccess = true;
+    SpaceId childId = Fork((void (*)())funcAddr);  // Do actual fork
+    machine->WriteRegister(2, childId);            // Return child PID
 }
 
-AddrSpace::AddrSpace(const AddrSpace *parentSpace) {
-    numPages = parentSpace->numPages;
-    pageTable = new TranslationEntry[numPages];
-    forkSuccess = true;
+//----------------------------------------------------------------------
+// SysExec()
+//----------------------------------------------------------------------
+void SysExec() {
+    int pid = currentThread->space->getPCB()->getID();
+    DEBUG('a', "System Call: %d invoked Exec\n", pid);
 
-    DEBUG('a', "Fork: attempting to allocate %d pages\n", numPages);
+    int filenameAddr = machine->ReadRegister(4);
+    char *filename = User2Kernel(filenameAddr);
 
-    for (unsigned int i = 0; i < numPages; i++) {
-        pageTable[i].virtualPage = i;
-        int physPage = memoryManager->getPage();
-        if (physPage == -1) {
-            DEBUG('a', "Out of memory during fork! Cleaning up.\n");
-            forkSuccess = false;
-            break;
-        }
+    DEBUG('a', "Exec Program: %d loading %s\n", pid, filename ? filename : "unknown");
 
-        pageTable[i].physicalPage = physPage;
-        pageTable[i].valid = TRUE;
-        pageTable[i].use = FALSE;
-        pageTable[i].dirty = FALSE;
-        pageTable[i].readOnly = FALSE;
-
-        int parentPhys = parentSpace->pageTable[i].physicalPage;
-        bcopy(&machine->mainMemory[parentPhys * PageSize],
-              &machine->mainMemory[physPage * PageSize],
-              PageSize);
-    }
-
-    if (!forkSuccess) {
-        for (unsigned int j = 0; j < numPages; j++) {
-            if (pageTable[j].valid) {
-                memoryManager->clearPage(pageTable[j].physicalPage);
-            }
-        }
-        delete[] pageTable;
-        pageTable = nullptr;
-        numPages = 0;
-        pcb = nullptr;
+    OpenFile *executable = fileSystem->Open(filename);
+    if (executable == NULL) {
+        machine->WriteRegister(2, -1);
+        delete[] filename;
         return;
     }
 
-    pcb = new PCB(currentThread);
-    int pid = processManager->getPID();
-    ASSERT(pid != -1);
-    pcb->setID(pid);
-}
-
-AddrSpace::~AddrSpace() {
-    for (unsigned int i = 0; i < numPages; i++) {
-        memoryManager->clearPage(pageTable[i].physicalPage);
+    AddrSpace *newSpace = new AddrSpace(executable);
+    delete executable;
+    if (newSpace == NULL) {
+        machine->WriteRegister(2, -1);
+        delete[] filename;
+        return;
     }
-    delete [] pageTable;
-    delete pcb;
+
+    currentThread->space = newSpace;
+    newSpace->InitRegisters();
+    newSpace->RestoreState();
+    machine->WriteRegister(2, 1);
+    delete[] filename;
+    machine->Run();  // Never returns
+    machine->WriteRegister(2, -1);  // Just in case
 }
 
-void AddrSpace::InitRegisters() {
-    for (int i = 0; i < NumTotalRegs; i++)
-        machine->WriteRegister(i, 0);
+//----------------------------------------------------------------------
+// SysExit()
+//----------------------------------------------------------------------
+void SysExit() {
+    int exitStatus = machine->ReadRegister(4);
+    int pid = currentThread->space->getPCB()->getID();
 
-    machine->WriteRegister(PCReg, 0);	
-    machine->WriteRegister(NextPCReg, 4);
-    machine->WriteRegister(StackReg, numPages * PageSize - 16);
-    DEBUG('a', "Initializing stack register to %d\n", numPages * PageSize - 16);
+    printf("System Call: [%d] invoked Exit.\n", pid);
+    printf("Process [%d] exits with [%d]\n", pid, exitStatus);
+
+    PCB *pcb = currentThread->space->getPCB();
+    pcb->setExitStatus(exitStatus);
+
+    processManager->clearPID(pcb->getID());
+    currentThread->Finish();
+    ASSERT(FALSE);  // Should never reach here
 }
 
-void AddrSpace::SaveState() {}
-
-void AddrSpace::RestoreState() {
-    machine->pageTable = pageTable;
-    machine->pageTableSize = numPages;
+//----------------------------------------------------------------------
+// SysYield()
+//----------------------------------------------------------------------
+void SysYield() {
+    int pid = currentThread->space->getPCB()->getID();
+    printf("System Call: [%d] invoked Yield.\n", pid);
+    currentThread->Yield();
 }
 
-int AddrSpace::ReadFile(int virtAddr, OpenFile *file, int size, int fileAddr) {
-    int physAddr = virtAddr;
-    char *buffer = new char[size];
-    int bytesRead = file->ReadAt(buffer, size, fileAddr);
-    bcopy(buffer, &machine->mainMemory[physAddr], bytesRead);
-    delete [] buffer;
-    return bytesRead;
+//----------------------------------------------------------------------
+// SysJoin()
+//----------------------------------------------------------------------
+void SysJoin() {
+    int pid = machine->ReadRegister(4);
+    int callerPid = currentThread->space->getPCB()->getID();
+
+    DEBUG('a', "System Call: %d invoked Join\n", callerPid);
+
+    if (!processManager->isChild(pid)) {
+        machine->WriteRegister(2, -1);
+        return;
+    }
+
+    int childExitStatus = processManager->Join(currentThread, pid);
+    machine->WriteRegister(2, childExitStatus);
 }
 
-int AddrSpace::getNumPages() const {
-    return numPages;
+//----------------------------------------------------------------------
+// SysKill()
+//----------------------------------------------------------------------
+void SysKill() {
+    int pid = machine->ReadRegister(4);
+    int callerPid = currentThread->space->getPCB()->getID();
+
+    DEBUG('a', "System Call: %d invoked Kill\n", callerPid);
+
+    if (!processManager->Kill(pid)) {
+        DEBUG('a', "Process %d cannot kill process %d: doesn't exist\n", callerPid, pid);
+        machine->WriteRegister(2, -1);
+    } else {
+        DEBUG('a', "Process %d killed process %d\n", callerPid, pid);
+        machine->WriteRegister(2, 0);
+    }
 }
 
-bool AddrSpace::wasForkSuccessful() const {
-    return forkSuccess;
+//----------------------------------------------------------------------
+// Fork() - Internal logic for process duplication
+//----------------------------------------------------------------------
+SpaceId Fork(void (*func)()) {
+    int parentPid = currentThread->space->getPCB()->getID();
+    DEBUG('a', "System Call: %d invoked Fork\n", parentPid);
+    DEBUG('a', "Process %d Fork: start at address 0x%x\n", parentPid, (int)func);
+
+    AddrSpace *childSpace = new AddrSpace(currentThread->space);
+    if (!childSpace) {
+        DEBUG('a', "Failed to allocate address space\n");
+        return -1;
+    }
+
+    Thread *childThread = new Thread("child");
+    childThread->space = childSpace;
+
+    PCB *childPCB = new PCB(childThread);
+    int childPid = processManager->getPID();
+    if (childPid == -1) {
+        delete childThread;
+        delete childSpace;
+        delete childPCB;
+        return -1;
+    }
+
+    childPCB->setID(childPid);
+    childPCB->setParent(currentThread->space->getPCB());
+    childPCB->setStartAddress((int)func);
+    processManager->setPCB(childPid, childPCB);
+
+    DEBUG('a', "Forking child %d with thread %s\n", childPid, childThread->getName());
+
+    // ✅ START THE CHILD PROCESS
+    childThread->Fork(ChildProcessStarter, (int)childPCB);
+
+    return childPid;
 }
