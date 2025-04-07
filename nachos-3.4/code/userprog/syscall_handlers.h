@@ -9,6 +9,8 @@
 #include "syscall.h"
 
 char* User2Kernel(int addr);
+// Forward declaration of core Fork function
+SpaceId Fork(void (*func)());
 
 // Function declarations for kernel-level syscall handlers
 void SysFork();
