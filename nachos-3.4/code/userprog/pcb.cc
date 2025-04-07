@@ -35,10 +35,13 @@ PCB* PCB::getParent() const {
 }
 
 void PCB::setExitStatus(int status, Lock *lock) {
+    lock->Acquire();
     exitStatus = status;
     exited = true;
-    joinCond->Broadcast(lock);  // notify waiting threads
+    joinCond->Broadcast(lock);
+    lock->Release();
 }
+
 
 int PCB::getExitStatus() const {
     return exitStatus;
