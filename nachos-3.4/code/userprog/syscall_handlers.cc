@@ -30,34 +30,17 @@ static void ChildProcessStarter(int arg) {
 //----------------------------------------------------------------------
 // Fork()
 //----------------------------------------------------------------------
-SpaceId Fork(void (*func)()) {
+void SysFork() {
+    int funcAddr = machine->ReadRegister(4);  // Get start address of function
     int parentPid = currentThread->space->getPCB()->getID();
+
+    DEBUG('a', "Func address passed to Fork: 0x%x\n", funcAddr);
     DEBUG('a', "System Call: %d invoked Fork\n", parentPid);
 
-    AddrSpace *childSpace = new AddrSpace(currentThread->space);
-    if (!childSpace) return -1;
-
-    Thread *childThread = new Thread("child");
-    childThread->space = childSpace;
-
-    PCB *childPCB = new PCB(childThread);
-    int pid = processManager->getPID();
-    if (pid == -1) {
-        delete childSpace;
-        delete childThread;
-        delete childPCB;
-        return -1;
-    }
-
-    childPCB->setID(pid);
-    childPCB->setParent(currentThread->space->getPCB());
-
-    // ✅ Save function pointer for use in ChildProcessStarter
-    childPCB->setStartAddress((int)func);
-
-    childThread->Fork(ChildProcessStarter, (int)childPCB);
-    return pid;
+    SpaceId childId = Fork((void (*)())funcAddr);  // Call actual fork logic
+    machine->WriteRegister(2, childId);            // Return child PID
 }
+
 
 
 //----------------------------------------------------------------------
