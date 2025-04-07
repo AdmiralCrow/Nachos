@@ -27,18 +27,20 @@ class AddrSpace {
   ~AddrSpace();
   
 
-    void InitRegisters();		// Initialize user-level CPU registers,
-					// before jumping to user code
-    void SaveState();			// Save address space-specific info on a context switch
-    void RestoreState();		// Restore address space-specific info on a context switch
-    int getNumPages() const;
-    // New function to load a segment from a file into the address space.
-    int ReadFile(int virtAddr, OpenFile *file, int size, int fileAddr);
+  void InitRegisters();		// Initialize user-level CPU registers,
+        // before jumping to user code
+  void SaveState();			// Save address space-specific info on a context switch
+  void RestoreState();		// Restore address space-specific info on a context switch
+  int getNumPages() const;
+  // New function to load a segment from a file into the address space.
+  int ReadFile(int virtAddr, OpenFile *file, int size, int fileAddr);
 
-    // Accessor for the associated PCB.
-    PCB* getPCB() { return pcb; }
-
+  // Accessor for the associated PCB.
+  PCB* getPCB() { return pcb; }
+  bool wasForkSuccessful() const;
   private:
+
+    bool forkSuccess; 
     TranslationEntry *pageTable;	// Assume linear page table translation for now!
     unsigned int numPages;		// Number of pages in the virtual address space
 
