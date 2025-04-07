@@ -81,17 +81,16 @@ void SysExec() {
 void SysExit() {
     int exitStatus = machine->ReadRegister(4);
     int pid = currentThread->space->getPCB()->getID();
-
     printf("System Call: [%d] invoked Exit.\n", pid);
     printf("Process [%d] exits with [%d]\n", pid, exitStatus);
 
     PCB *pcb = currentThread->space->getPCB();
     pcb->setExitStatus(exitStatus);
-
     processManager->clearPID(pcb->getID());
     currentThread->Finish();
-    ASSERT(FALSE);  // Should never reach here
+    ASSERT(FALSE); // should not return
 }
+
 
 //----------------------------------------------------------------------
 // SysYield()
