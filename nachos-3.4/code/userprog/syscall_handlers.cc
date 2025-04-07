@@ -147,10 +147,12 @@ SpaceId Fork(void (*func)()) {
     DEBUG('a', "Process %d Fork: start at address 0x%x\n", parentPid, (int)func);
 
     AddrSpace *childSpace = new AddrSpace(currentThread->space);
-    if (!childSpace) {
-        DEBUG('a', "Failed to allocate address space\n");
+    if (!childSpace || !childSpace->wasForkSuccessful()) {
+        DEBUG('a', "Failed to allocate address space for child\n");
+        delete childSpace;
         return -1;
     }
+    
 
     Thread *childThread = new Thread("child");
     childThread->space = childSpace;
@@ -171,7 +173,7 @@ SpaceId Fork(void (*func)()) {
 
     DEBUG('a', "Forking child %d with thread %s\n", childPid, childThread->getName());
 
-    // ✅ START THE CHILD PROCESS
+    //  START THE CHILD PROCESS
     childThread->Fork(ChildProcessStarter, (int)childPCB);
 
     return childPid;
