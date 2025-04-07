@@ -164,3 +164,6 @@ int AddrSpace::ReadFile(int virtAddr, OpenFile *file, int size, int fileAddr) {
     delete [] buffer;
     return bytesRead;
 }
+int AddrSpace::getNumPages() const {
+    return numPages;
+}
